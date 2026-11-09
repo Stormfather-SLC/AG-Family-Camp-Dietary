@@ -343,6 +343,7 @@ $("#app").addEventListener("click",async e=>{
 // add / edit a person
 function personDialog(p){
   const editing=!!p;p=p?JSON.parse(JSON.stringify(p)):{id:uid(),name:"",family:"",items:[]};
+  let newFam=false; // true while the organizer is naming a new family or household
   const fams=[...new Set((current.guests||[]).map(x=>(x.family||"").trim()).filter(Boolean))];
   const ov=document.createElement("div");ov.className="overlay";
   const pick=r=>p.items.find(i=>i.r===r);
@@ -353,7 +354,8 @@ function personDialog(p){
       <h2 id="pd-h">${editing?"Edit":"Add a person"}</h2>
       <div class="grid2">
         <label class="f">Name<input type="text" id="pd-name" value="${esc(p.name)}" autocomplete="off"></label>
-        <label class="f">Family or household <span class="muted" style="font-weight:400">optional</span><input type="text" id="pd-fam" list="pd-fams" value="${esc(p.family)}" placeholder="e.g. Larsen (Ethan & Amy)" autocomplete="off"><datalist id="pd-fams">${fams.map(f=>`<option value="${esc(f)}">`).join("")}</datalist></label>
+        <label class="f">Family or household <span class="muted" style="font-weight:400">optional</span><select id="pd-famsel"><option value="" ${!newFam&&!p.family?"selected":""}>None</option>${fams.map(f=>`<option value="${esc(f)}" ${!newFam&&p.family===f?"selected":""}>${esc(f)}</option>`).join("")}<option value="__new" ${newFam?"selected":""}>+ New family or household…</option></select></label>
+        ${newFam?`<label class="f" style="grid-column:1/-1">Name of the family or household<input type="text" id="pd-fam" value="${esc(p.family)}" placeholder="e.g. Larsen (Ethan & Amy)" autocomplete="off"><span class="muted" style="font-weight:400">You can pick it for the next person you add.</span></label>`:""}
       </div>
       <fieldset style="border:0;padding:0;margin:0"><legend style="font-size:13px;font-weight:500;margin-bottom:4px">Dietary needs</legend>
         <div class="picks">
@@ -369,10 +371,13 @@ function personDialog(p){
     </div>`;
     function ck(r,l){return `<label><input type="checkbox" data-pick="${esc(r)}" ${pick(r)?"checked":""}> ${esc(l||r)}</label>`}
   };
-  const read=()=>{const n=ov.querySelector("#pd-name");if(n)p.name=n.value;const f=ov.querySelector("#pd-fam");if(f)p.family=f.value;const o=ov.querySelector("#pd-other");if(o){const it=pick("Other");if(it)it.text=o.value}
+  const read=()=>{const n=ov.querySelector("#pd-name");if(n)p.name=n.value;
+    const fs=ov.querySelector("#pd-famsel");if(fs){newFam=fs.value==="__new";if(newFam){const f=ov.querySelector("#pd-fam");p.family=f?f.value:""}else p.family=fs.value}const o=ov.querySelector("#pd-other");if(o){const it=pick("Other");if(it)it.text=o.value}
     ov.querySelectorAll("[data-lv]").forEach(s=>{const it=pick(s.dataset.lv);if(it)it.level=s.value})};
   draw();document.body.appendChild(ov);ov.querySelector("#pd-name").focus();
-  ov.addEventListener("change",e=>{const c=e.target.closest("[data-pick]");if(!c)return;read();const r=c.dataset.pick;
+  ov.addEventListener("change",e=>{
+    if(e.target.id==="pd-famsel"){read();draw();const f=ov.querySelector(newFam?"#pd-fam":"#pd-famsel");if(f)f.focus();return}
+    const c=e.target.closest("[data-pick]");if(!c)return;read();const r=c.dataset.pick;
     if(c.checked){if(!pick(r))p.items.push(DIETS.includes(r)?{r,level:"pref"}:{r,level:""})}else p.items=p.items.filter(i=>i.r!==r);
     draw();const again=ov.querySelector(`[data-pick="${CSS.escape(r)}"]`);if(again)again.focus()});
   const close=()=>{ov.remove();document.removeEventListener("keydown",onKey)};
@@ -382,6 +387,7 @@ function personDialog(p){
     if(e.target.id!=="pd-ok")return;read();
     p.name=p.name.trim();p.family=p.family.trim();const err=ov.querySelector("#pd-err");
     if(!p.name){err.textContent="Enter the person's name.";return}
+    if(newFam&&!p.family){err.textContent="Name the new family or household, or choose None.";return}
     if(!p.items.length){err.textContent="Choose at least one dietary need.";return}
     const o=pick("Other");if(o&&!String(o.text||"").trim()){err.textContent="Say what the other need is, or uncheck Something else.";return}
     const dup=current.guests.find(x=>x.id!==p.id&&x.name.trim().toLowerCase()===p.name.toLowerCase());

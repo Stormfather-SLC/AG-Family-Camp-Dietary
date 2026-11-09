@@ -16,7 +16,7 @@ Family Camp groups only provide dietary information. Rooms, meals, and A/V don't
 ### Organizers
 - Open their group from the invitation link (`…#FC-XXXXX`) or by entering the group code. Only Aspen Grove starts groups.
 - Group name, dates, and deadline are read-only; changes go through the office.
-- Add each person with a dietary need: name, optional family or household, one or more restrictions (the nine major allergens, celiac disease, vegetarian, vegan, or something else), and how serious each one is. Seriousness is optional so organizers aren't blocked by details they don't have. Celiac disease is always treated as strict.
+- Add each person with a dietary need: name, optional family or household (choose an existing one or "+ New family or household"), one or more restrictions (the nine major allergens, celiac disease, vegetarian, vegan, or something else), and how serious each one is. Seriousness is optional so organizers aren't blocked by details they don't have. Celiac disease is always treated as strict.
 - If no one has dietary needs, check a box instead.
 - Lock in when done. After lock-in, changes need a call to the office.
 
