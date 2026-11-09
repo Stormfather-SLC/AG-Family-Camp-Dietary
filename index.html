@@ -1,0 +1,519 @@
+<title>Family Camp Dietary Needs</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: follows the Aspen Grove site and the Conference Details form. Navy header band, light grey page, white cards, royal-blue actions, IBM Plex Sans. One column for organizers; tabbed workspace for staff. */
+:root{
+  --bg:#f6f6f8; --surface:#ffffff; --sunk:#eef2f7; --line:#e1e5eb;
+  --fg:#141414; --muted:#5f6670;
+  --navy:#002e5d; --navy-ink:#ffffff; --title:#002e5d;
+  --accent:#0047ba; --accent-ink:#ffffff; --accent-soft:#e7f1fe;
+  --ok:#1f7a45; --ok-soft:#dff1e6; --warn:#9a5a00; --warn-soft:#fdf0d9; --bad:#c41230; --bad-soft:#fde4e7;
+  --body:"IBM Plex Sans","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --r:8px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f141b; --surface:#171e28; --sunk:#1e2733; --line:#2c3644;
+  --fg:#eef1f5; --muted:#a3adba; --navy:#0b2340; --navy-ink:#ffffff; --title:#cfe2ff;
+  --accent:#6aa6ff; --accent-ink:#06142b; --accent-soft:#16294a;
+  --ok:#6fd39a; --ok-soft:#173526; --warn:#f0b45a; --warn-soft:#3a2a12; --bad:#ff8094; --bad-soft:#3d1820; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f141b; --surface:#171e28; --sunk:#1e2733; --line:#2c3644;
+  --fg:#eef1f5; --muted:#a3adba; --navy:#0b2340; --navy-ink:#ffffff; --title:#cfe2ff;
+  --accent:#6aa6ff; --accent-ink:#06142b; --accent-soft:#16294a;
+  --ok:#6fd39a; --ok-soft:#173526; --warn:#f0b45a; --warn-soft:#3a2a12; --bad:#ff8094; --bad-soft:#3d1820; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 var(--body)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--navy)}
+.wrap{max-width:980px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.band{background:var(--navy);color:var(--navy-ink)}
+header.band .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:14px;flex-wrap:wrap}
+.brand{display:flex;flex-direction:column;gap:0}
+.brand b{font-size:18px;font-weight:600;letter-spacing:.01em;user-select:none}
+.brand span{font-size:13px;opacity:.8}
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tabs button{background:transparent;border:1px solid rgba(255,255,255,.35);color:var(--navy-ink);padding:6px 12px;border-radius:999px;font:500 13px var(--body);cursor:pointer}
+.tabs button[aria-pressed="true"]{background:#fff;color:#002e5d;border-color:#fff}
+.banner{font-size:13px;padding-block:8px;background:var(--warn-soft);color:var(--warn)}
+main.wrap{padding-block:22px 60px;display:flex;flex-direction:column;gap:18px}
+h1,h2,h3{color:var(--title);text-wrap:balance;margin:0;line-height:1.25}
+h1{font-size:24px;font-weight:600}
+h2{font-size:18px;font-weight:600}
+h3{font-size:15px;font-weight:600}
+p{margin:0}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.between{justify-content:space-between}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:500;min-width:0}
+input[type=text],input[type=email],input[type=date],input[type=search],select,textarea{font:15px var(--body);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%;min-width:0}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn{font:500 14px var(--body);border-radius:6px;padding:8px 14px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);cursor:pointer;white-space:nowrap}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn.quiet{background:transparent;border-color:var(--line);color:var(--fg)}
+.btn.danger{background:var(--bad);border-color:var(--bad);color:#fff}
+.btn.sm{padding:4px 10px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap}
+.p-ok{background:var(--ok-soft);color:var(--ok)} .p-warn{background:var(--warn-soft);color:var(--warn)} .p-bad{background:var(--bad-soft);color:var(--bad)} .p-mute{background:var(--sunk);color:var(--muted)} .p-acc{background:var(--accent-soft);color:var(--accent)}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px 18px}
+.facts div{display:flex;flex-direction:column}
+.facts dt{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.facts dd{margin:0;font-weight:500}
+dl{margin:0}
+.note{background:var(--accent-soft);border-radius:6px;padding:10px 12px;font-size:14px}
+.note.warn{background:var(--warn-soft);color:var(--warn)}
+.fam{display:flex;flex-direction:column;gap:0;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.fam-h{background:var(--sunk);padding:6px 12px;font-size:13px;font-weight:600;display:flex;justify-content:space-between}
+.guest{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 12px;border-top:1px solid var(--line);flex-wrap:wrap}
+.guest:first-of-type{border-top:0}
+.guest .who{display:flex;flex-direction:column;gap:4px;min-width:0}
+.chips{display:flex;flex-wrap:wrap;gap:4px}
+.chip{font-size:12px;padding:2px 8px;border-radius:4px;background:var(--sunk);color:var(--fg)}
+.chip.serious{background:var(--bad-soft);color:var(--bad);font-weight:600}
+.empty{padding:22px;text-align:center;border:1px dashed var(--line);border-radius:6px;color:var(--muted)}
+.tblwrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.overlay{position:fixed;inset:0;background:rgba(0,10,25,.55);display:flex;align-items:flex-start;justify-content:center;padding:max(24px,env(safe-area-inset-top,0px)) 16px 24px;overflow-y:auto;z-index:20}
+.dialog{background:var(--surface);color:var(--fg);border-radius:10px;max-width:560px;width:100%;padding:20px;display:flex;flex-direction:column;gap:14px}
+.picks{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:4px 12px}
+.picks label{display:flex;gap:8px;align-items:center;font-size:14px;font-weight:400}
+.picks .h{grid-column:1/-1;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-top:6px}
+.lv{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:6px 10px;align-items:center;font-size:14px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:9px 16px;border-radius:6px;font-size:14px;z-index:30;max-width:calc(100% - 32px)}
+.save{font-size:13px;color:var(--muted)}
+.code{font-family:var(--mono);font-size:13px}
+pre.mail{white-space:pre-wrap;font:13px/1.5 var(--body);background:var(--sunk);padding:12px;border-radius:6px;margin:0;max-height:260px;overflow:auto}
+.weeknav{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.weeknav b{min-width:220px}
+/* printout preview */
+.sheet{background:#fff;color:#111;border:1px solid var(--line);border-radius:6px;padding:22px;font-size:13px;overflow-x:auto}
+.sheet h2,.sheet h3{color:#002e5d}
+.sheet table th{color:#555}
+.sheet td,.sheet th{border-color:#ddd}
+.sheet .flag{color:#c41230;font-weight:700}
+.sheet .sec{margin-top:18px}
+.sheet .gh{background:#eef2f7;padding:6px 8px;font-weight:600;margin-top:12px}
+.sheet .fh{font-weight:600;font-size:12px;color:#555;padding:6px 8px 2px;text-transform:uppercase;letter-spacing:.04em}
+.sheet .tot{font-size:22px;font-weight:700;color:#002e5d}
+@media (max-width:560px){.lv{grid-template-columns:1fr}.weeknav b{min-width:0}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<header class="band"><div class="wrap">
+  <div class="brand"><b id="brandName">Aspen Grove</b><span>Family Camp dietary needs</span></div>
+  <nav class="tabs" id="tabs" hidden></nav>
+</div></header>
+<div class="banner" id="banner" hidden><div class="wrap" id="bannerText"></div></div>
+<main class="wrap" id="app"><div class="card"><p class="muted">Loading…</p></div></main>
+
+<script>
+// ---------- setup ----------
+const DEMO=/[?&]demo(=|&|$)/.test(location.search)||/\.github\.io$/.test(location.hostname);
+const PAGE_URL=DEMO?"":"https://claude.ai/artifact/1AMXwYNZtpJiycYB2Gz1iz"; // invitation links point here
+const OFFICE_PHONE="";        // shown to organizers when filled in
+const LS_KEY="fcdiet:groups:v1", STAFF_KEY="fcdiet:staff";
+const ALLERGENS=["Milk / dairy","Eggs","Wheat / gluten","Peanuts","Tree nuts","Fish","Shellfish","Soy","Sesame"];
+const CONDITIONS=["Celiac disease"];   // always strict, no seriousness question
+const DIETS=["Vegetarian","Vegan"];
+const ABBR={"Milk / dairy":"DF","Eggs":"EF","Wheat / gluten":"GF","Peanuts":"PN","Tree nuts":"TN","Fish":"FISH","Shellfish":"SHELL","Soy":"SOY","Sesame":"SES","Celiac disease":"CEL","Vegetarian":"VEG","Vegan":"VGN"};
+const LEVELS=[["intol","Intolerance"],["mild","Allergy, mild"],["severe","Allergy, severe"],["air","Allergy, airborne / anaphylactic"],["pref","Preference"]];
+const LEVEL_TEXT={intol:"intolerance",mild:"mild allergy",severe:"severe allergy",air:"airborne allergy",pref:"preference"};
+const isSerious=it=>it.r==="Celiac disease"||it.level==="severe"||it.level==="air";
+
+// ---------- small helpers ----------
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const iso=d=>{const x=new Date(d);return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0")};
+const parse=s=>{const[y,m,d]=String(s).split("-").map(Number);return new Date(y,m-1,d)};
+const addDays=(s,n)=>{const d=parse(s);d.setDate(d.getDate()+n);return iso(d)};
+const today=()=>iso(new Date());
+const fmt=(s,opt={weekday:"short",month:"short",day:"numeric"})=>s?parse(s).toLocaleDateString(undefined,opt):"";
+const fmtRange=(a,b)=>a===b?fmt(a):fmt(a)+" – "+fmt(b);
+const mondayOf=s=>{const d=parse(s);const k=(d.getDay()+6)%7;d.setDate(d.getDate()-k);return iso(d)};
+const uid=()=>Math.random().toString(36).slice(2,10);
+function newCode(){const a="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let s="FC-";for(let i=0;i<5;i++)s+=a[Math.floor(Math.random()*a.length)];return s}
+function lsGet(k,f){try{const v=localStorage.getItem(k);return v==null?f:JSON.parse(v)}catch(e){return f}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+let toastT;function toast(m){let t=$(".toast");if(!t){t=document.createElement("div");t.className="toast";t.setAttribute("role","status");document.body.appendChild(t)}t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,3200)}
+async function copyText(txt,label){try{await navigator.clipboard.writeText(txt);toast((label||"Text")+" copied")}catch(e){showText(label||"Copy this text",txt)}}
+function itemLabel(it){const n=it.r==="Other"?(it.text||"Other"):it.r;const lv=it.r==="Celiac disease"?"strict":(it.level?LEVEL_TEXT[it.level]:"");return lv?n+" ("+lv+")":n}
+function itemShort(it){return it.r==="Other"?"OTHER":ABBR[it.r]}
+
+// ---------- data store: shared database inside Claude, this browser otherwise ----------
+const store={db:null,mode:"local",subs:[],
+  async init(){
+    try{if(!DEMO&&window.claude&&claude.use){this.db=await Promise.race([claude.use("db"),new Promise(r=>setTimeout(()=>r(null),10000))])}}catch(e){this.db=null}
+    this.mode=this.db?"db":"local";
+    if(this.mode==="local"&&!lsGet(LS_KEY,null))lsSet(LS_KEY,sampleGroups());
+  },
+  local(){return lsGet(LS_KEY,{})},
+  async all(){if(this.db){const q=await this.db.collection("groups").get();return q.docs.map(d=>d.data())}return Object.values(this.local())},
+  async get(code){if(this.db){const s=await this.db.doc("groups/"+code).get();return s.exists?s.data():null}return this.local()[code]||null},
+  async put(g){g=JSON.parse(JSON.stringify(g));if(this.db){await this.db.doc("groups/"+g.code).set(g);return}const all=this.local();all[g.code]=g;lsSet(LS_KEY,all);this.ping()},
+  async del(code){if(this.db){await this.db.doc("groups/"+code).delete();return}const all=this.local();delete all[code];lsSet(LS_KEY,all);this.ping()},
+  watch(cb){if(this.db){return this.db.collection("groups").onSnapshot(q=>cb(q.docs.map(d=>d.data())),()=>cb(null))}this.subs.push(cb);cb(Object.values(this.local()));return()=>{this.subs=this.subs.filter(x=>x!==cb)}},
+  ping(){const v=Object.values(this.local());this.subs.forEach(f=>f(v))}
+};
+// Retention: dietary details are kept only through the group's week. The day after a group leaves, its record is deleted.
+const expired=g=>g.depart&&g.depart<today();
+async function purgeExpired(list){let n=0;for(const g of list||[]){if(expired(g)){try{await store.del(g.code);n++}catch(e){}}}return n}
+
+// ---------- sample groups (made up; dates move with today) ----------
+function sampleGroups(){
+  const mon=addDays(mondayOf(today()),7), fri=addDays(mon,4), mon2=addDays(mon,7);
+  const G=(o)=>Object.assign({guests:[],status:"open",noneNeeded:false,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),touched:true,sample:true},o);
+  const P=(name,family,items)=>({id:uid(),name,family,items});
+  const gs=[
+    G({code:"FC-DEMO1",name:"Larsen Family Reunion",organizer:"Karen Larsen",email:"karen.larsen@example.com",arrive:mon,depart:fri,deadline:addDays(mon,-14),status:"locked",lockedAt:new Date().toISOString(),
+      guests:[P("Ethan Larsen","Larsen (Ethan & Amy)",[{r:"Wheat / gluten",level:"intol"},{r:"Milk / dairy",level:"intol"}]),P("Amy Larsen","Larsen (Ethan & Amy)",[{r:"Milk / dairy",level:"intol"}]),
+        P("Lily Larsen","Larsen (Ethan & Amy)",[{r:"Peanuts",level:"air"},{r:"Tree nuts",level:"severe"}]),P("Grandpa Dale Larsen","Larsen (Dale & Ruth)",[{r:"Celiac disease"}]),
+        P("Ruth Larsen","Larsen (Dale & Ruth)",[{r:"Vegetarian",level:"pref"}]),P("Marcus Okafor","Okafor",[{r:"Shellfish",level:"severe"}]),P("Ada Okafor","Okafor",[{r:"Wheat / gluten",level:"intol"}])]}),
+    G({code:"FC-DEMO2",name:"Pine Ridge Ward Family Camp",organizer:"Daniel Whitaker",email:"d.whitaker@example.com",arrive:mon,depart:fri,deadline:addDays(mon,-14),status:"locked",lockedAt:new Date().toISOString(),
+      guests:[P("Sofia Ramirez","Ramirez",[{r:"Wheat / gluten",level:"intol"}]),P("Mateo Ramirez","Ramirez",[{r:"Eggs",level:"mild"}]),P("Hannah Brooks","Brooks",[{r:"Vegan",level:"pref"}]),
+        P("Owen Brooks","Brooks",[{r:"Milk / dairy",level:"intol"},{r:"Other",text:"Strawberries",level:"mild"}]),P("Grace Chen","Chen",[{r:"Sesame",level:"severe"}])]}),
+    G({code:"FC-DEMO3",name:"Hollis–Day Family",organizer:"Megan Hollis",email:"megan.hollis@example.com",arrive:mon2,depart:addDays(mon2,4),deadline:addDays(today(),3),status:"open",
+      guests:[P("Jacob Hollis","Hollis",[{r:"Wheat / gluten",level:"intol"}]),P("Noah Day","Day",[{r:"Milk / dairy",level:"intol"}])]}),
+    G({code:"FC-DEMO4",name:"Thompson Cousins Camp",organizer:"Rachel Thompson",email:"rachel.t@example.com",arrive:mon2,depart:addDays(mon2,4),deadline:addDays(mon2,-14),status:"open",touched:false,guests:[]})
+  ];
+  return Object.fromEntries(gs.map(g=>[g.code,g]));
+}
+
+// ---------- status ----------
+function statusOf(g){
+  if(g.status==="locked")return["Locked in","p-ok"];
+  if(g.deadline&&today()>g.deadline)return["Past deadline","p-bad"];
+  if(!g.touched)return["Not started","p-mute"];
+  return["In progress","p-warn"];
+}
+const linkFor=code=>(PAGE_URL||location.href.split("#")[0])+"#"+code;
+function inviteText(g){
+  return {subject:`Dietary needs for your Aspen Grove stay (${g.name})`,
+  body:`Hi ${(g.organizer||"").split(" ")[0]||"there"},
+
+We're looking forward to hosting ${g.name} at Aspen Grove, ${fmtRange(g.arrive,g.depart)}.
+
+So our kitchen can plan for everyone, please list anyone in your group with a food allergy, intolerance, or dietary restriction on this page:
+
+${linkFor(g.code)}
+
+If the link doesn't open your group, enter this code on the page: ${g.code}
+
+Please finish and lock in your list by ${fmt(g.deadline,{weekday:"long",month:"long",day:"numeric"})}. If no one in your group has dietary needs, you can say so on the page.
+
+We only use this information to prepare meals, and we delete it at the end of your stay.
+
+Thank you,
+Aspen Grove`}}
+function reminderText(g){
+  const n=(g.guests||[]).length;
+  return {subject:`Reminder: dietary needs for ${g.name}`,
+  body:`Hi ${(g.organizer||"").split(" ")[0]||"there"},
+
+A quick reminder to finish your group's dietary list by ${fmt(g.deadline,{weekday:"long",month:"long",day:"numeric"})}. ${n?`You've listed ${n} ${n===1?"person":"people"} so far; when the list is complete, press Lock in.`:"Nothing has been entered yet. If no one has dietary needs, you can say so on the page."}
+
+${linkFor(g.code)}  (code ${g.code})
+
+Thank you,
+Aspen Grove`}}
+
+// ---------- staff view (simulated; real sign-in comes with BYU hosting) ----------
+let staffMode=/[?&]staff(=|&|$)/.test(location.search)||(()=>{try{return sessionStorage.getItem(STAFF_KEY)==="1"}catch(e){return false}})();
+function setStaff(on){staffMode=on;try{sessionStorage.setItem(STAFF_KEY,on?"1":"0")}catch(e){}if(!on&&view!=="org")view="org";render();toast(on?"Staff view on":"Staff view off")}
+document.addEventListener("keydown",e=>{if(e.altKey&&e.shiftKey&&!e.ctrlKey&&!e.metaKey&&e.code==="KeyS"){e.preventDefault();setStaff(!staffMode)}});
+let taps=0,tapT;$("#brandName").addEventListener("click",()=>{taps++;clearTimeout(tapT);tapT=setTimeout(()=>taps=0,1500);if(taps>=5){taps=0;setStaff(!staffMode)}});
+
+// ---------- state ----------
+let view="org";          // org | groups | printout
+let current=null;        // organizer's group
+let allGroups=null, unwatch=null;
+let printWeek=mondayOf(today());
+let saveState="", saveTimer=null, saving=Promise.resolve();
+
+function renderTabs(){
+  const t=$("#tabs");t.hidden=!staffMode;if(!staffMode){t.innerHTML="";return}
+  const tabs=[["org","Organizer form"],["groups","Groups"],["printout","Weekly printout"]];
+  t.innerHTML=tabs.map(([k,l])=>`<button type="button" data-tab="${k}" aria-pressed="${view===k}">${l}</button>`).join("");
+}
+$("#tabs").addEventListener("click",e=>{const b=e.target.closest("[data-tab]");if(!b)return;view=b.dataset.tab;if(view!=="org")ensureWatch();render()});
+function renderBanner(){
+  const b=$("#banner"),t=$("#bannerText");
+  const msg=store.mode==="local"?(DEMO?"Demo: made-up sample groups, saved in this browser only. Nothing here reaches Aspen Grove.":"Practice mode: changes save in this browser only. Open this page in Claude while signed in to save for real."):"";
+  b.hidden=!msg;t.textContent=msg;
+}
+function render(){renderTabs();renderBanner();if(view==="groups")return renderGroups();if(view==="printout")return renderPrintout();renderOrg()}
+
+// ---------- organizer form ----------
+async function openFromHash(){
+  const code=decodeURIComponent(location.hash.slice(1)).trim().toUpperCase();
+  current=null;
+  if(code){const g=await store.get(code).catch(()=>null);
+    if(g&&expired(g)){await store.del(code).catch(()=>{});current={code,gone:true}}
+    else current=g||{code,missing:true}}
+  view="org";render();
+}
+window.addEventListener("hashchange",openFromHash);
+
+function renderOrg(){
+  const app=$("#app");
+  if(!current||current.missing||current.gone){
+    app.innerHTML=`<section class="card" aria-labelledby="h-enter">
+      <h1 id="h-enter">Tell us about dietary needs</h1>
+      <p>Group organizers: open the link in your invitation email, or enter the group code from that email.</p>
+      ${current&&current.missing?`<p class="note warn">We couldn't find a group with code <span class="code">${esc(current.code)}</span>. Check the code in your email, or call the Aspen Grove office${OFFICE_PHONE?" at "+esc(OFFICE_PHONE):""}.</p>`:""}
+      ${current&&current.gone?`<p class="note">This group's stay has ended, so its dietary details have been deleted.</p>`:""}
+      <form id="codeForm" class="row"><label class="f" style="flex:1 1 200px">Group code<input type="text" id="codeIn" placeholder="FC-XXXXX" autocomplete="off" spellcheck="false"></label><button class="btn" style="align-self:flex-end">Open</button></form>
+      ${store.mode==="local"&&!staffMode?`<p class="small muted">Trying it out? Enter <span class="code">FC-DEMO3</span> for a sample group.</p>`:""}
+    </section>`;
+    $("#codeForm").addEventListener("submit",e=>{e.preventDefault();const v=$("#codeIn").value.trim().toUpperCase();if(v)location.hash=v});
+    return;
+  }
+  const g=current, locked=g.status==="locked", ro=locked&&!staffMode;
+  const fams=groupByFamily(g.guests||[]);
+  const needCount=(g.guests||[]).length;
+  app.innerHTML=`
+  <section class="card" aria-labelledby="h-g">
+    <div class="row between"><h1 id="h-g">${esc(g.name)}</h1><span class="pill ${statusOf(g)[1]}">${statusOf(g)[0]}</span></div>
+    <dl class="facts">
+      <div><dt>Dates</dt><dd>${esc(fmtRange(g.arrive,g.depart))}</dd></div>
+      <div><dt>Organizer</dt><dd>${esc(g.organizer||"")}</dd></div>
+      <div><dt>Please lock in by</dt><dd>${esc(fmt(g.deadline,{weekday:"short",month:"long",day:"numeric"}))}</dd></div>
+      <div><dt>Group code</dt><dd class="code">${esc(g.code)}</dd></div>
+    </dl>
+    <p class="small muted">Group name and dates come from your reservation. To change them, call the Aspen Grove office${OFFICE_PHONE?" at "+esc(OFFICE_PHONE):""}.</p>
+  </section>
+  ${locked?`<section class="note" role="status"><b>Locked in ${g.lockedAt?esc(fmt(iso(g.lockedAt),{month:"short",day:"numeric"})):""}.</b> Thank you. If anything changes, call the Aspen Grove office${OFFICE_PHONE?" at "+esc(OFFICE_PHONE):""} and we'll update it for you.${staffMode?` <button class="btn sm ghost" data-act="reopen">Reopen for the organizer</button>`:""}</section>`:""}
+  <section class="card" aria-labelledby="h-list">
+    <div class="row between"><h2 id="h-list">People with dietary needs <span class="muted" style="font-weight:400">(${needCount})</span></h2>${ro?"":`<button class="btn" data-act="add">Add a person</button>`}</div>
+    <p class="small muted">List only the people who have a food allergy, intolerance, or dietary restriction. We ask for a name and the restriction only, and delete this list the day after your group leaves.</p>
+    ${needCount?Object.entries(fams).map(([f,ps])=>`<div class="fam"><div class="fam-h"><span>${esc(f)}</span><span class="muted">${ps.length}</span></div>${ps.map(p=>`<div class="guest"><div class="who"><b>${esc(p.name)}</b><div class="chips">${p.items.map(it=>`<span class="chip ${isSerious(it)?"serious":""}">${esc(itemLabel(it))}</span>`).join("")}</div></div>${ro?"":`<div class="row"><button class="btn sm quiet" data-act="edit" data-id="${p.id}">Edit</button><button class="btn sm quiet" data-act="rm" data-id="${p.id}">Remove</button></div>`}</div>`).join("")}</div>`).join("")
+      :`<div class="empty">${ro?(g.noneNeeded?"No one in this group has dietary needs.":"No one listed."):"No one listed yet. Press <b>Add a person</b> for each guest with a dietary need."}</div>`}
+    ${!ro&&!needCount?`<label class="row" style="font-size:14px"><input type="checkbox" id="noneNeeded" ${g.noneNeeded?"checked":""}> No one in our group has dietary needs</label>`:""}
+  </section>
+  ${ro?"":`<section class="card" aria-labelledby="h-lock">
+    <h2 id="h-lock">Lock in</h2>
+    <p>When your list is complete, lock it in. After that, changes need a call to the Aspen Grove office.</p>
+    ${!needCount&&!g.noneNeeded?`<p class="note warn">Add at least one person, or check "No one in our group has dietary needs."</p>`:""}
+    <div class="row between"><span class="save" id="saveState" aria-live="polite">${esc(saveState)}</span><button class="btn" data-act="lock" ${!needCount&&!g.noneNeeded||locked?"disabled":""}>Lock in my list</button></div>
+  </section>`}`;
+  const nn=$("#noneNeeded");if(nn)nn.addEventListener("change",()=>{g.noneNeeded=nn.checked;queueSave();renderOrg()});
+}
+function groupByFamily(list){const o={};for(const p of list){const f=(p.family||"").trim()||"Other guests";(o[f]=o[f]||[]).push(p)}return o}
+
+function queueSave(){
+  if(!current||current.missing)return;
+  current.touched=true;current.updatedAt=new Date().toISOString();
+  saveState="Saving…";const s=$("#saveState");if(s)s.textContent=saveState;
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{const snap=JSON.parse(JSON.stringify(current));
+    saving=saving.then(()=>store.put(snap)).then(()=>{saveState="All changes saved";const s=$("#saveState");if(s)s.textContent=saveState},
+      ()=>{saveState="Couldn't save. Check your connection; we'll try again with your next change.";const s=$("#saveState");if(s)s.textContent=saveState;toast("Couldn't save")})},500);
+}
+
+$("#app").addEventListener("click",async e=>{
+  const b=e.target.closest("[data-act]");if(!b)return;const a=b.dataset.act;
+  if(view==="org"&&current){
+    if(a==="add")return personDialog(null);
+    if(a==="edit")return personDialog(current.guests.find(p=>p.id===b.dataset.id));
+    if(a==="rm"){const p=current.guests.find(x=>x.id===b.dataset.id);return confirmDialog(`Remove ${p.name}?`,"They'll be taken off your group's list.","Remove",()=>{current.guests=current.guests.filter(x=>x.id!==p.id);queueSave();renderOrg()})}
+    if(a==="lock")return confirmDialog("Lock in your list?",`You're confirming ${current.guests.length?current.guests.length+" "+(current.guests.length===1?"person":"people")+" with dietary needs":"that no one in your group has dietary needs"}. After you lock in, changes need a call to the Aspen Grove office.`,"Lock in",()=>{current.status="locked";current.lockedAt=new Date().toISOString();queueSave();renderOrg();toast("Locked in. Thank you!")});
+    if(a==="reopen"){current.status="open";current.lockedAt=null;queueSave();renderOrg();return toast("Reopened. The organizer can edit again.")}
+  }
+  if(view==="groups")return groupAction(a,b.dataset.code,b);
+  if(view==="printout"){
+    if(a==="wkprev"){printWeek=addDays(printWeek,-7);return renderPrintout()}
+    if(a==="wknext"){printWeek=addDays(printWeek,7);return renderPrintout()}
+    if(a==="wknow"){printWeek=mondayOf(today());return renderPrintout()}
+    if(a==="print")return window.print();
+    if(a==="download")return downloadSheet();
+  }
+});
+
+// add / edit a person
+function personDialog(p){
+  const editing=!!p;p=p?JSON.parse(JSON.stringify(p)):{id:uid(),name:"",family:"",items:[]};
+  const fams=[...new Set((current.guests||[]).map(x=>(x.family||"").trim()).filter(Boolean))];
+  const ov=document.createElement("div");ov.className="overlay";
+  const pick=r=>p.items.find(i=>i.r===r);
+  const draw=()=>{
+    const other=pick("Other");
+    const lvRows=p.items.filter(i=>i.r!=="Celiac disease");
+    ov.innerHTML=`<div class="dialog" role="dialog" aria-modal="true" aria-labelledby="pd-h">
+      <h2 id="pd-h">${editing?"Edit":"Add a person"}</h2>
+      <div class="grid2">
+        <label class="f">Name<input type="text" id="pd-name" value="${esc(p.name)}" autocomplete="off"></label>
+        <label class="f">Family or household <span class="muted" style="font-weight:400">optional</span><input type="text" id="pd-fam" list="pd-fams" value="${esc(p.family)}" placeholder="e.g. Larsen (Ethan & Amy)" autocomplete="off"><datalist id="pd-fams">${fams.map(f=>`<option value="${esc(f)}">`).join("")}</datalist></label>
+      </div>
+      <fieldset style="border:0;padding:0;margin:0"><legend style="font-size:13px;font-weight:500;margin-bottom:4px">Dietary needs</legend>
+        <div class="picks">
+          <div class="h">Allergies and intolerances</div>${ALLERGENS.map(r=>ck(r)).join("")}
+          <div class="h">Conditions and diets</div>${CONDITIONS.map(r=>ck(r)).join("")}${DIETS.map(r=>ck(r)).join("")}${ck("Other","Something else")}
+        </div></fieldset>
+      ${other?`<label class="f">What else?<input type="text" id="pd-other" value="${esc(other.text||"")}" placeholder="e.g. strawberries, low sodium"></label>`:""}
+      ${lvRows.length?`<div class="f"><span style="font-size:13px;font-weight:500">How serious is each? <span class="muted" style="font-weight:400">Leave as "Not sure" if you don't know.</span></span>
+        <div class="lv">${lvRows.map(i=>`<span>${esc(i.r==="Other"?(i.text||"Something else"):i.r)}</span><select data-lv="${esc(i.r)}" aria-label="How serious: ${esc(i.r)}"><option value="">Not sure</option>${LEVELS.filter(([v])=>DIETS.includes(i.r)?v==="pref":true).map(([v,l])=>`<option value="${v}" ${i.level===v?"selected":""}>${l}</option>`).join("")}</select>`).join("")}</div></div>`:""}
+      ${p.items.some(i=>i.r==="Celiac disease")?`<p class="small muted">Celiac disease is always treated as strictly gluten-free.</p>`:""}
+      <p class="small muted" id="pd-err" role="alert"></p>
+      <div class="row" style="justify-content:flex-end"><button class="btn quiet" id="pd-cancel" type="button">Cancel</button><button class="btn" id="pd-ok" type="button">${editing?"Save":"Add"}</button></div>
+    </div>`;
+    function ck(r,l){return `<label><input type="checkbox" data-pick="${esc(r)}" ${pick(r)?"checked":""}> ${esc(l||r)}</label>`}
+  };
+  const read=()=>{const n=ov.querySelector("#pd-name");if(n)p.name=n.value;const f=ov.querySelector("#pd-fam");if(f)p.family=f.value;const o=ov.querySelector("#pd-other");if(o){const it=pick("Other");if(it)it.text=o.value}
+    ov.querySelectorAll("[data-lv]").forEach(s=>{const it=pick(s.dataset.lv);if(it)it.level=s.value})};
+  draw();document.body.appendChild(ov);ov.querySelector("#pd-name").focus();
+  ov.addEventListener("change",e=>{const c=e.target.closest("[data-pick]");if(!c)return;read();const r=c.dataset.pick;
+    if(c.checked){if(!pick(r))p.items.push(DIETS.includes(r)?{r,level:"pref"}:{r,level:""})}else p.items=p.items.filter(i=>i.r!==r);
+    draw();const again=ov.querySelector(`[data-pick="${CSS.escape(r)}"]`);if(again)again.focus()});
+  const close=()=>{ov.remove();document.removeEventListener("keydown",onKey)};
+  const onKey=e=>{if(e.key==="Escape")close()};document.addEventListener("keydown",onKey);
+  ov.addEventListener("click",e=>{
+    if(e.target===ov||e.target.id==="pd-cancel")return close();
+    if(e.target.id!=="pd-ok")return;read();
+    p.name=p.name.trim();p.family=p.family.trim();const err=ov.querySelector("#pd-err");
+    if(!p.name){err.textContent="Enter the person's name.";return}
+    if(!p.items.length){err.textContent="Choose at least one dietary need.";return}
+    const o=pick("Other");if(o&&!String(o.text||"").trim()){err.textContent="Say what the other need is, or uncheck Something else.";return}
+    const dup=current.guests.find(x=>x.id!==p.id&&x.name.trim().toLowerCase()===p.name.toLowerCase());
+    if(dup&&!ov.dataset.dupOk){err.textContent=`${dup.name} is already listed. Press ${editing?"Save":"Add"} again to list them twice, or Cancel and edit the existing entry.`;ov.dataset.dupOk="1";return}
+    const i=current.guests.findIndex(x=>x.id===p.id);if(i>=0)current.guests[i]=p;else current.guests.push(p);
+    current.noneNeeded=false;close();queueSave();renderOrg();toast(editing?"Saved":`${p.name} added`);
+  });
+}
+function confirmDialog(title,text,okLabel,onOk,danger){
+  const ov=document.createElement("div");ov.className="overlay";
+  ov.innerHTML=`<div class="dialog" role="dialog" aria-modal="true" aria-labelledby="cd-h"><h2 id="cd-h">${esc(title)}</h2><p>${esc(text)}</p><div class="row" style="justify-content:flex-end"><button class="btn quiet" id="cd-no" type="button">Cancel</button><button class="btn ${danger?"danger":""}" id="cd-ok" type="button">${esc(okLabel)}</button></div></div>`;
+  document.body.appendChild(ov);ov.querySelector("#cd-ok").focus();
+  const close=()=>ov.remove();
+  ov.addEventListener("click",e=>{if(e.target===ov||e.target.id==="cd-no")close();if(e.target.id==="cd-ok"){close();onOk()}});
+  ov.addEventListener("keydown",e=>{if(e.key==="Escape")close()});
+}
+function showText(title,txt,extra){
+  const ov=document.createElement("div");ov.className="overlay";
+  ov.innerHTML=`<div class="dialog" role="dialog" aria-modal="true" aria-labelledby="st-h"><h2 id="st-h">${esc(title)}</h2>${extra||""}<pre class="mail" tabindex="0">${esc(txt)}</pre><div class="row" style="justify-content:flex-end"><button class="btn quiet" id="st-close" type="button">Close</button><button class="btn" id="st-copy" type="button">Copy</button></div></div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener("click",async e=>{if(e.target===ov||e.target.id==="st-close")ov.remove();
+    if(e.target.id==="st-copy"){try{await navigator.clipboard.writeText(txt);toast("Copied")}catch(_){const r=document.createRange();r.selectNodeContents(ov.querySelector("pre"));const s=getSelection();s.removeAllRanges();s.addRange(r);toast("Selected. Press Ctrl+C or ⌘C to copy.")}}});
+}
+function emailDialog(title,g,m){
+  const full=`To: ${g.email||""}\nSubject: ${m.subject}\n\n${m.body}`;
+  showText(title,full,`<p class="small muted">Copy this into a new email from the Aspen Grove office account and send it. Nothing is sent from this page.</p>`);
+}
+
+// ---------- staff: groups ----------
+function ensureWatch(){if(unwatch)return;let first=true;
+  unwatch=store.watch(async list=>{allGroups=list||[];if(first){first=false;const n=await purgeExpired(allGroups);if(n)toast(`Deleted ${n} finished ${n===1?"group":"groups"} (stay ended)`)}
+    if(view==="groups")renderGroups();if(view==="printout")renderPrintout()})}
+function renderGroups(){
+  const app=$("#app");
+  const list=(allGroups||[]).filter(g=>!expired(g)).sort((a,b)=>(a.arrive||"").localeCompare(b.arrive||"")||a.name.localeCompare(b.name));
+  const counts={};list.forEach(g=>{const s=statusOf(g)[0];counts[s]=(counts[s]||0)+1});
+  app.innerHTML=`
+  <section class="card" aria-labelledby="h-new">
+    <h2 id="h-new">Start a group</h2>
+    <form id="newForm" class="grid2" autocomplete="off">
+      <label class="f">Group name<input type="text" id="ng-name" required></label>
+      <label class="f">Organizer<input type="text" id="ng-org" required></label>
+      <label class="f">Organizer email<input type="email" id="ng-email"></label>
+      <label class="f">Arrives<input type="date" id="ng-arr" required></label>
+      <label class="f">Departs<input type="date" id="ng-dep" required></label>
+      <label class="f">Lock-in deadline<input type="date" id="ng-dl"><span class="muted" style="font-weight:400">Blank = 14 days before arrival</span></label>
+      <div class="row" style="grid-column:1/-1;justify-content:flex-end"><button class="btn">Start group and get invitation</button></div>
+    </form>
+  </section>
+  <section class="card" aria-labelledby="h-groups">
+    <div class="row between"><h2 id="h-groups">Current and upcoming groups</h2>
+      <div class="row">${["Locked in","In progress","Not started","Past deadline"].filter(s=>counts[s]).map(s=>`<span class="pill ${s==="Locked in"?"p-ok":s==="In progress"?"p-warn":s==="Past deadline"?"p-bad":"p-mute"}">${counts[s]} ${s.toLowerCase()}</span>`).join("")}</div></div>
+    <p class="small muted">Each group's dietary details are deleted automatically the day after it leaves.</p>
+    ${allGroups==null?`<p class="muted">Loading groups…</p>`:list.length?`<div class="tblwrap"><table>
+      <thead><tr><th>Group</th><th>Dates</th><th>Lock in by</th><th>Status</th><th class="num">People</th><th>Actions</th></tr></thead>
+      <tbody>${list.map(g=>{const[s,c]=statusOf(g);const ser=(g.guests||[]).filter(p=>p.items.some(isSerious)).length;return `<tr>
+        <td><b>${esc(g.name)}</b><div class="small muted">${esc(g.organizer||"")} · <span class="code">${esc(g.code)}</span></div></td>
+        <td>${esc(fmtRange(g.arrive,g.depart))}</td><td>${esc(fmt(g.deadline))}</td>
+        <td><span class="pill ${c}">${s}</span></td>
+        <td class="num">${g.noneNeeded&&!(g.guests||[]).length?`<span class="muted">None</span>`:(g.guests||[]).length}${ser?`<div class="small" style="color:var(--bad)">${ser} serious</div>`:""}</td>
+        <td><div class="row"><button class="btn sm quiet" data-act="open" data-code="${g.code}">Open</button><button class="btn sm quiet" data-act="invite" data-code="${g.code}">Invitation</button>${g.status!=="locked"?`<button class="btn sm quiet" data-act="remind" data-code="${g.code}">Reminder</button>`:""}<button class="btn sm quiet" data-act="delete" data-code="${g.code}">Delete</button></div></td></tr>`}).join("")}</tbody></table></div>`
+      :`<div class="empty">No groups yet. Start one above; you'll get an invitation email to send the organizer.${store.mode==="db"?`<div style="margin-top:10px"><button class="btn sm ghost" data-act="samples">Add sample groups for a demo</button></div>`:""}</div>`}
+  </section>`;
+  $("#newForm").addEventListener("submit",async e=>{e.preventDefault();
+    const v=id=>$("#"+id).value.trim();const arrive=v("ng-arr"),depart=v("ng-dep");
+    if(depart<arrive){toast("Departure is before arrival");return}
+    let code=newCode();while((allGroups||[]).some(g=>g.code===code))code=newCode();
+    const g={code,name:v("ng-name"),organizer:v("ng-org"),email:v("ng-email"),arrive,depart,deadline:v("ng-dl")||addDays(arrive,-14),status:"open",noneNeeded:false,touched:false,guests:[],createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+    try{await store.put(g);e.target.reset();emailDialog("Invitation for "+g.name,g,inviteText(g))}catch(err){toast("Couldn't start the group. Try again.")}
+  });
+}
+async function groupAction(a,code,btn){
+  const g=(allGroups||[]).find(x=>x.code===code);
+  if(a==="samples"){const s=sampleGroups();for(const x of Object.values(s))await store.put(x);return toast("Sample groups added")}
+  if(!g)return;
+  if(a==="open"){if(location.hash==="#"+code)openFromHash();else location.hash=code;return}
+  if(a==="invite")return emailDialog("Invitation for "+g.name,g,inviteText(g));
+  if(a==="remind")return emailDialog("Reminder for "+g.name,g,reminderText(g));
+  if(a==="delete")return confirmDialog(`Delete ${g.name}?`,"This removes the group and its dietary list for everyone. It can't be undone.","Delete",async()=>{try{await store.del(code);toast("Deleted")}catch(e){toast("Couldn't delete. Try again.")}},true);
+}
+
+// ---------- staff: weekly printout ----------
+function weekGroups(mon){const sun=addDays(mon,6);return (allGroups||[]).filter(g=>!expired(g)&&g.arrive<=sun&&g.depart>=mon)}
+function sheetHTML(mon){
+  const sun=addDays(mon,6), gs=weekGroups(mon).sort((a,b)=>a.arrive.localeCompare(b.arrive)||a.name.localeCompare(b.name));
+  const people=gs.flatMap(g=>(g.guests||[]).map(p=>({...p,group:g.name})));
+  const byR={};people.forEach(p=>p.items.forEach(it=>{const k=it.r==="Other"?"Other: "+(it.text||"").trim():it.r;const o=byR[k]=byR[k]||{n:0,ser:0,abbr:itemShort(it)};o.n++;if(isSerious(it))o.ser++}));
+  const order=[...ALLERGENS,...CONDITIONS,...DIETS];
+  const rows=Object.entries(byR).sort((a,b)=>{const ia=order.indexOf(a[0]),ib=order.indexOf(b[0]);return (ia<0?99:ia)-(ib<0?99:ib)||b[1].n-a[1].n});
+  const combos={};people.forEach(p=>{const k=p.items.map(itemShort).sort().join(" + ");combos[k]=(combos[k]||0)+1});
+  const comboRows=Object.entries(combos).sort((a,b)=>b[1]-a[1]);
+  const serious=people.filter(p=>p.items.some(isSerious));
+  const pending=gs.filter(g=>g.status!=="locked");
+  return `<h2>Dietary needs · week of ${esc(fmt(mon,{month:"long",day:"numeric",year:"numeric"}))}</h2>
+  <p style="color:#555;margin-top:2px">${esc(fmt(mon))} – ${esc(fmt(sun))} · ${gs.length} ${gs.length===1?"group":"groups"} · printed ${esc(new Date().toLocaleString(undefined,{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}))}</p>
+  ${pending.length?`<p class="flag" style="margin-top:8px">Not locked in yet: ${pending.map(g=>esc(g.name)).join(", ")}. Counts may change.</p>`:""}
+  <div class="sec"><h3>Kitchen: special plates</h3>
+  <p style="margin:6px 0"><span class="tot">${people.length}</span> guests with dietary needs (one special plate each per meal)</p>
+  ${people.length?`<table><thead><tr><th>Restriction</th><th>Code</th><th class="num">Guests</th><th class="num">Serious</th></tr></thead><tbody>${rows.map(([k,o])=>`<tr><td>${esc(k)}</td><td>${esc(o.abbr)}</td><td class="num">${o.n}</td><td class="num">${o.ser?`<span class="flag">${o.ser}</span>`:"–"}</td></tr>`).join("")}</tbody></table>
+  <h3 style="margin-top:14px">Plate combinations</h3>
+  <table><thead><tr><th>Plate</th><th class="num">Count</th></tr></thead><tbody>${comboRows.map(([k,n])=>`<tr><td>${esc(k)}</td><td class="num">${n}</td></tr>`).join("")}</tbody></table>`:`<p style="color:#555">No dietary needs listed for this week.</p>`}
+  ${serious.length?`<h3 style="margin-top:14px" class="flag">Serious allergies and celiac (${serious.length})</h3><table><tbody>${serious.map(p=>`<tr><td><b>${esc(p.name)}</b></td><td>${esc(p.group)}</td><td>${p.items.filter(isSerious).map(it=>esc(itemLabel(it))).join(", ")}</td></tr>`).join("")}</tbody></table>`:""}
+  </div>
+  <div class="sec"><h3>Dining hall: who needs a special plate</h3>
+  ${gs.map(g=>{const fams=groupByFamily(g.guests||[]);return `<div class="gh">${esc(g.name)} · ${esc(fmtRange(g.arrive,g.depart))} · ${(g.guests||[]).length} ${(g.guests||[]).length===1?"guest":"guests"}${g.status!=="locked"?` · <span class="flag">not locked in</span>`:""}</div>
+    ${(g.guests||[]).length?Object.entries(fams).map(([f,ps])=>`<div class="fh">${esc(f)}</div><table><tbody>${ps.map(p=>`<tr><td style="width:34%"><b>${esc(p.name)}</b></td><td>${p.items.map(it=>isSerious(it)?`<span class="flag">${esc(itemLabel(it))}</span>`:esc(itemLabel(it))).join(", ")}</td><td style="width:16%">${esc(p.items.map(itemShort).join(" + "))}</td></tr>`).join("")}</tbody></table>`).join(""):`<p style="color:#555;padding:4px 8px">${g.noneNeeded?"No dietary needs.":"Nothing listed yet."}</p>`}`}).join("")||`<p style="color:#555">No groups this week.</p>`}
+  </div>
+  <p style="color:#777;font-size:11px;margin-top:18px">Codes: ${Object.entries(ABBR).map(([k,v])=>v+" = "+k).join(" · ")} · OTHER = see note. Red = serious allergy or celiac. Confidential: dispose of this sheet at the end of the week.</p>`;
+}
+const canPrint=window.top===window.self;
+function renderPrintout(){
+  const app=$("#app");const n=weekGroups(printWeek).length;
+  app.innerHTML=`<section class="card" aria-labelledby="h-pr">
+    <div class="row between"><h2 id="h-pr">Weekly printout</h2>
+      <div class="row">${canPrint?`<button class="btn" data-act="print">Print</button>`:""}<button class="btn ${canPrint?"ghost":""}" data-act="download">Download printout</button></div></div>
+    <div class="weeknav"><button class="btn sm quiet" data-act="wkprev" aria-label="Previous week">←</button><b>Week of ${esc(fmt(printWeek,{month:"long",day:"numeric",year:"numeric"}))}</b><button class="btn sm quiet" data-act="wknext" aria-label="Next week">→</button><button class="btn sm ghost" data-act="wknow">This week</button><span class="small muted">${n} ${n===1?"group":"groups"}</span></div>
+    <p class="small muted">One sheet for front and back of house: counts for the kitchen on top, names by group and family below.${canPrint?"":" Download it, open the file, and print from there."}</p>
+  </section>
+  <article class="sheet" id="sheet">${allGroups==null?"Loading…":sheetHTML(printWeek)}</article>`;
+}
+async function downloadSheet(){
+  const html=`<!doctype html><html><head><meta charset="utf-8"><title>Dietary needs ${printWeek}</title><style>
+  body{font:13px/1.45 "IBM Plex Sans",Arial,sans-serif;color:#111;margin:24px}h2,h3{color:#002e5d;margin:0}table{border-collapse:collapse;width:100%;margin-top:4px}td,th{text-align:left;padding:5px 8px;border-bottom:1px solid #ddd;vertical-align:top}th{font-size:11px;text-transform:uppercase;color:#555}.num{text-align:right}.flag{color:#c41230;font-weight:700}.sec{margin-top:18px}.gh{background:#eef2f7;padding:6px 8px;font-weight:600;margin-top:12px;break-after:avoid}.fh{font-weight:600;font-size:11px;color:#555;padding:6px 8px 2px;text-transform:uppercase}.tot{font-size:22px;font-weight:700;color:#002e5d}.noprint{margin-bottom:16px}@media print{.noprint{display:none}body{margin:0}}
+  </style></head><body><div class="noprint"><button onclick="window.print()">Print this sheet</button></div>${sheetHTML(printWeek)}</body></html>`;
+  let dl=null;try{dl=window.claude&&claude.use?await claude.use("downloads"):null}catch(e){}
+  if(!dl){const w=window.open("","_blank");if(w){w.document.write(html);w.document.close();return}toast("Downloads aren't available in this view. Open the page in claude.ai to download.");return}
+  try{await dl.save({filename:`dietary-needs-week-of-${printWeek}.html`,data:html})}catch(e){if(e&&e.code!=="declined")toast("Couldn't download the printout.")}
+}
+
+// ---------- start ----------
+(async()=>{
+  await store.init();
+  render();
+  await openFromHash();
+  if(staffMode&&!location.hash){view="groups";ensureWatch();render()}
+})();
+</script>
