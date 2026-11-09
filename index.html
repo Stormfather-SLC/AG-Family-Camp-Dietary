@@ -150,6 +150,8 @@ function itemLabel(it){const n=it.r==="Other"?(it.text||"Other"):it.r;const lv=i
 function itemShort(it){return it.r==="Other"?"OTHER":ABBR[it.r]}
 
 // ---------- data store: shared database inside Claude, this browser otherwise ----------
+// Records from the shared database are read-only; always work on a copy.
+const copy=o=>JSON.parse(JSON.stringify(o));
 const store={db:null,mode:"local",subs:[],
   async init(){
     try{if(!DEMO&&window.claude&&claude.use){this.db=await Promise.race([claude.use("db"),new Promise(r=>setTimeout(()=>r(null),10000))])}}catch(e){this.db=null}
@@ -157,11 +159,11 @@ const store={db:null,mode:"local",subs:[],
     if(this.mode==="local"&&!lsGet(LS_KEY,null))lsSet(LS_KEY,sampleGroups());
   },
   local(){return lsGet(LS_KEY,{})},
-  async all(){if(this.db){const q=await this.db.collection("groups").get();return q.docs.map(d=>d.data())}return Object.values(this.local())},
-  async get(code){if(this.db){const s=await this.db.doc("groups/"+code).get();return s.exists?s.data():null}return this.local()[code]||null},
+  async all(){if(this.db){const q=await this.db.collection("groups").get();return q.docs.map(d=>copy(d.data()))}return Object.values(this.local())},
+  async get(code){if(this.db){const s=await this.db.doc("groups/"+code).get();return s.exists?copy(s.data()):null}return this.local()[code]||null},
   async put(g){g=JSON.parse(JSON.stringify(g));if(this.db){await this.db.doc("groups/"+g.code).set(g);return}const all=this.local();all[g.code]=g;lsSet(LS_KEY,all);this.ping()},
   async del(code){if(this.db){await this.db.doc("groups/"+code).delete();return}const all=this.local();delete all[code];lsSet(LS_KEY,all);this.ping()},
-  watch(cb){if(this.db){return this.db.collection("groups").onSnapshot(q=>cb(q.docs.map(d=>d.data())),()=>cb(null))}this.subs.push(cb);cb(Object.values(this.local()));return()=>{this.subs=this.subs.filter(x=>x!==cb)}},
+  watch(cb){if(this.db){return this.db.collection("groups").onSnapshot(q=>cb(q.docs.map(d=>copy(d.data()))),()=>cb(null))}this.subs.push(cb);cb(Object.values(this.local()));return()=>{this.subs=this.subs.filter(x=>x!==cb)}},
   ping(){const v=Object.values(this.local());this.subs.forEach(f=>f(v))}
 };
 // Retention: dietary details are kept only through the group's week. The day after a group leaves, its record is deleted.
@@ -362,7 +364,7 @@ function personDialog(p){
       ${lvRows.length?`<div class="f"><span style="font-size:13px;font-weight:500">How serious is each? <span class="muted" style="font-weight:400">Leave as "Not sure" if you don't know.</span></span>
         <div class="lv">${lvRows.map(i=>`<span>${esc(i.r==="Other"?(i.text||"Something else"):i.r)}</span><select data-lv="${esc(i.r)}" aria-label="How serious: ${esc(i.r)}"><option value="">Not sure</option>${LEVELS.filter(([v])=>DIETS.includes(i.r)?v==="pref":true).map(([v,l])=>`<option value="${v}" ${i.level===v?"selected":""}>${l}</option>`).join("")}</select>`).join("")}</div></div>`:""}
       ${p.items.some(i=>i.r==="Celiac disease")?`<p class="small muted">Celiac disease is always treated as strictly gluten-free.</p>`:""}
-      <p class="small muted" id="pd-err" role="alert"></p>
+      <p class="small" id="pd-err" role="alert" style="color:var(--bad);font-weight:500"></p>
       <div class="row" style="justify-content:flex-end"><button class="btn quiet" id="pd-cancel" type="button">Cancel</button><button class="btn" id="pd-ok" type="button">${editing?"Save":"Add"}</button></div>
     </div>`;
     function ck(r,l){return `<label><input type="checkbox" data-pick="${esc(r)}" ${pick(r)?"checked":""}> ${esc(l||r)}</label>`}
