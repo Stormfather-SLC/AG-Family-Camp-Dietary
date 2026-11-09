@@ -121,7 +121,7 @@ pre.mail{white-space:pre-wrap;font:13px/1.5 var(--body);background:var(--sunk);p
 const DEMO=/[?&]demo(=|&|$)/.test(location.search)||/\.github\.io$/.test(location.hostname);
 const PAGE_URL=DEMO?"":"https://claude.ai/artifact/1AMXwYNZtpJiycYB2Gz1iz"; // invitation links point here
 const OFFICE_PHONE="";        // shown to organizers when filled in
-const LS_KEY="fcdiet:groups:v1", STAFF_KEY="fcdiet:staff";
+const LS_KEY="fcdiet:groups:v2", STAFF_KEY="fcdiet:staff";
 const ALLERGENS=["Milk / dairy","Eggs","Wheat / gluten","Peanuts","Tree nuts","Fish","Shellfish","Soy","Sesame"];
 const CONDITIONS=["Celiac disease"];   // always strict, no seriousness question
 const DIETS=["Vegetarian","Vegan"];
@@ -139,7 +139,16 @@ const addDays=(s,n)=>{const d=parse(s);d.setDate(d.getDate()+n);return iso(d)};
 const today=()=>iso(new Date());
 const fmt=(s,opt={weekday:"short",month:"short",day:"numeric"})=>s?parse(s).toLocaleDateString(undefined,opt):"";
 const fmtRange=(a,b)=>a===b?fmt(a):fmt(a)+" – "+fmt(b);
-const mondayOf=s=>{const d=parse(s);const k=(d.getDay()+6)%7;d.setDate(d.getDate()-k);return iso(d)};
+// Camp weeks run Saturday check-in through Friday.
+const campWeekOf=s=>{const d=parse(s);const k=(d.getDay()+1)%7;d.setDate(d.getDate()-k);return iso(d)};
+const weekEnd=sat=>addDays(sat,6);
+const weekLabel=sat=>fmt(sat,{month:"short",day:"numeric"})+" – "+fmt(weekEnd(sat),{month:"short",day:"numeric"});
+// Saturday check-ins, May through September, for this summer (weeks not yet over) and next summer.
+function campSeasons(){const y=new Date().getFullYear(),now=today(),out=[];
+  for(const yr of [y,y+1]){let d=campWeekOf(yr+"-05-07");const weeks=[];
+    while(d<=yr+"-09-30"){if(d.slice(5,7)>="05"&&weekEnd(d)>=now)weeks.push(d);d=addDays(d,7)}
+    if(weeks.length)out.push([yr,weeks])}
+  return out}
 const uid=()=>Math.random().toString(36).slice(2,10);
 function newCode(){const a="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let s="FC-";for(let i=0;i<5;i++)s+=a[Math.floor(Math.random()*a.length)];return s}
 function lsGet(k,f){try{const v=localStorage.getItem(k);return v==null?f:JSON.parse(v)}catch(e){return f}}
@@ -172,7 +181,7 @@ async function purgeExpired(list){let n=0;for(const g of list||[]){if(expired(g)
 
 // ---------- sample groups (made up; dates move with today) ----------
 function sampleGroups(){
-  const mon=addDays(mondayOf(today()),7), fri=addDays(mon,4), mon2=addDays(mon,7);
+  const mon=addDays(campWeekOf(today()),7), fri=weekEnd(mon), mon2=addDays(mon,7);
   const G=(o)=>Object.assign({guests:[],status:"open",noneNeeded:false,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),touched:true,sample:true},o);
   const P=(name,family,items)=>({id:uid(),name,family,items});
   const gs=[
@@ -183,9 +192,9 @@ function sampleGroups(){
     G({code:"FC-DEMO2",name:"Pine Ridge Ward Family Camp",organizer:"Daniel Whitaker",email:"d.whitaker@example.com",arrive:mon,depart:fri,deadline:addDays(mon,-14),status:"locked",lockedAt:new Date().toISOString(),
       guests:[P("Sofia Ramirez","Ramirez",[{r:"Wheat / gluten",level:"intol"}]),P("Mateo Ramirez","Ramirez",[{r:"Eggs",level:"mild"}]),P("Hannah Brooks","Brooks",[{r:"Vegan",level:"pref"}]),
         P("Owen Brooks","Brooks",[{r:"Milk / dairy",level:"intol"},{r:"Other",text:"Strawberries",level:"mild"}]),P("Grace Chen","Chen",[{r:"Sesame",level:"severe"}])]}),
-    G({code:"FC-DEMO3",name:"Hollis–Day Family",organizer:"Megan Hollis",email:"megan.hollis@example.com",arrive:mon2,depart:addDays(mon2,4),deadline:addDays(today(),3),status:"open",
+    G({code:"FC-DEMO3",name:"Hollis–Day Family",organizer:"Megan Hollis",email:"megan.hollis@example.com",arrive:mon2,depart:weekEnd(mon2),deadline:addDays(today(),3),status:"open",
       guests:[P("Jacob Hollis","Hollis",[{r:"Wheat / gluten",level:"intol"}]),P("Noah Day","Day",[{r:"Milk / dairy",level:"intol"}])]}),
-    G({code:"FC-DEMO4",name:"Thompson Cousins Camp",organizer:"Rachel Thompson",email:"rachel.t@example.com",arrive:mon2,depart:addDays(mon2,4),deadline:addDays(mon2,-14),status:"open",touched:false,guests:[]})
+    G({code:"FC-DEMO4",name:"Thompson Cousins Camp",organizer:"Rachel Thompson",email:"rachel.t@example.com",arrive:mon2,depart:weekEnd(mon2),deadline:addDays(mon2,-14),status:"open",touched:false,guests:[]})
   ];
   return Object.fromEntries(gs.map(g=>[g.code,g]));
 }
@@ -238,7 +247,7 @@ let taps=0,tapT;$("#brandName").addEventListener("click",()=>{taps++;clearTimeou
 let view="org";          // org | groups | printout
 let current=null;        // organizer's group
 let allGroups=null, unwatch=null;
-let printWeek=mondayOf(today());
+let printWeek=campWeekOf(today());
 let saveState="", saveTimer=null, saving=Promise.resolve();
 
 function renderTabs(){
@@ -334,7 +343,7 @@ $("#app").addEventListener("click",async e=>{
   if(view==="printout"){
     if(a==="wkprev"){printWeek=addDays(printWeek,-7);return renderPrintout()}
     if(a==="wknext"){printWeek=addDays(printWeek,7);return renderPrintout()}
-    if(a==="wknow"){printWeek=mondayOf(today());return renderPrintout()}
+    if(a==="wknow"){printWeek=campWeekOf(today());return renderPrintout()}
     if(a==="print")return window.print();
     if(a==="download")return downloadSheet();
   }
@@ -431,8 +440,7 @@ function renderGroups(){
       <label class="f">Group name<input type="text" id="ng-name" required></label>
       <label class="f">Organizer<input type="text" id="ng-org" required></label>
       <label class="f">Organizer email<input type="email" id="ng-email"></label>
-      <label class="f">Arrives<input type="date" id="ng-arr" required></label>
-      <label class="f">Departs<input type="date" id="ng-dep" required></label>
+      <label class="f">Camp week (Saturday check-in)<select id="ng-week" required><option value="">Choose a week</option>${campSeasons().map(([yr,ws])=>`<optgroup label="Summer ${yr}">${ws.map(w=>`<option value="${w}">${esc(weekLabel(w))}</option>`).join("")}</optgroup>`).join("")}</select></label>
       <label class="f">Lock-in deadline<input type="date" id="ng-dl"><span class="muted" style="font-weight:400">Blank = 14 days before arrival</span></label>
       <div class="row" style="grid-column:1/-1;justify-content:flex-end"><button class="btn">Start group and get invitation</button></div>
     </form>
@@ -442,7 +450,7 @@ function renderGroups(){
       <div class="row">${["Locked in","In progress","Not started","Past deadline"].filter(s=>counts[s]).map(s=>`<span class="pill ${s==="Locked in"?"p-ok":s==="In progress"?"p-warn":s==="Past deadline"?"p-bad":"p-mute"}">${counts[s]} ${s.toLowerCase()}</span>`).join("")}</div></div>
     <p class="small muted">Each group's dietary details are deleted automatically the day after it leaves.</p>
     ${allGroups==null?`<p class="muted">Loading groups…</p>`:list.length?`<div class="tblwrap"><table>
-      <thead><tr><th>Group</th><th>Dates</th><th>Lock in by</th><th>Status</th><th class="num">People</th><th>Actions</th></tr></thead>
+      <thead><tr><th>Group</th><th>Camp week</th><th>Lock in by</th><th>Status</th><th class="num">People</th><th>Actions</th></tr></thead>
       <tbody>${list.map(g=>{const[s,c]=statusOf(g);const ser=(g.guests||[]).filter(p=>p.items.some(isSerious)).length;return `<tr>
         <td><b>${esc(g.name)}</b><div class="small muted">${esc(g.organizer||"")} · <span class="code">${esc(g.code)}</span></div></td>
         <td>${esc(fmtRange(g.arrive,g.depart))}</td><td>${esc(fmt(g.deadline))}</td>
@@ -452,8 +460,7 @@ function renderGroups(){
       :`<div class="empty">No groups yet. Start one above; you'll get an invitation email to send the organizer.${store.mode==="db"?`<div style="margin-top:10px"><button class="btn sm ghost" data-act="samples">Add sample groups for a demo</button></div>`:""}</div>`}
   </section>`;
   $("#newForm").addEventListener("submit",async e=>{e.preventDefault();
-    const v=id=>$("#"+id).value.trim();const arrive=v("ng-arr"),depart=v("ng-dep");
-    if(depart<arrive){toast("Departure is before arrival");return}
+    const v=id=>$("#"+id).value.trim();const arrive=v("ng-week"),depart=weekEnd(arrive);
     let code=newCode();while((allGroups||[]).some(g=>g.code===code))code=newCode();
     const g={code,name:v("ng-name"),organizer:v("ng-org"),email:v("ng-email"),arrive,depart,deadline:v("ng-dl")||addDays(arrive,-14),status:"open",noneNeeded:false,touched:false,guests:[],createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
     try{await store.put(g);e.target.reset();emailDialog("Invitation for "+g.name,g,inviteText(g))}catch(err){toast("Couldn't start the group. Try again.")}
@@ -481,7 +488,7 @@ function sheetHTML(mon){
   const comboRows=Object.entries(combos).sort((a,b)=>b[1]-a[1]);
   const serious=people.filter(p=>p.items.some(isSerious));
   const pending=gs.filter(g=>g.status!=="locked");
-  return `<h2>Dietary needs · week of ${esc(fmt(mon,{month:"long",day:"numeric",year:"numeric"}))}</h2>
+  return `<h2>Dietary needs · camp week of ${esc(fmt(mon,{month:"long",day:"numeric",year:"numeric"}))}</h2>
   <p style="color:#555;margin-top:2px">${esc(fmt(mon))} – ${esc(fmt(sun))} · ${gs.length} ${gs.length===1?"group":"groups"} · printed ${esc(new Date().toLocaleString(undefined,{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}))}</p>
   ${pending.length?`<p class="flag" style="margin-top:8px">Not locked in yet: ${pending.map(g=>esc(g.name)).join(", ")}. Counts may change.</p>`:""}
   <div class="sec"><h3>Kitchen: special plates</h3>
@@ -503,7 +510,7 @@ function renderPrintout(){
   app.innerHTML=`<section class="card" aria-labelledby="h-pr">
     <div class="row between"><h2 id="h-pr">Weekly printout</h2>
       <div class="row">${canPrint?`<button class="btn" data-act="print">Print</button>`:""}<button class="btn ${canPrint?"ghost":""}" data-act="download">Download printout</button></div></div>
-    <div class="weeknav"><button class="btn sm quiet" data-act="wkprev" aria-label="Previous week">←</button><b>Week of ${esc(fmt(printWeek,{month:"long",day:"numeric",year:"numeric"}))}</b><button class="btn sm quiet" data-act="wknext" aria-label="Next week">→</button><button class="btn sm ghost" data-act="wknow">This week</button><span class="small muted">${n} ${n===1?"group":"groups"}</span></div>
+    <div class="weeknav"><button class="btn sm quiet" data-act="wkprev" aria-label="Previous week">←</button><b>Camp week ${esc(weekLabel(printWeek))}, ${parse(printWeek).getFullYear()}</b><button class="btn sm quiet" data-act="wknext" aria-label="Next week">→</button><button class="btn sm ghost" data-act="wknow">This week</button><span class="small muted">${n} ${n===1?"group":"groups"}</span></div>
     <p class="small muted">One sheet for front and back of house: counts for the kitchen on top, names by group and family below.${canPrint?"":" Download it, open the file, and print from there."}</p>
   </section>
   <article class="sheet" id="sheet">${allGroups==null?"Loading…":sheetHTML(printWeek)}</article>`;

@@ -23,8 +23,8 @@ Family Camp groups only provide dietary information. Rooms, meals, and A/V don't
 ### Staff
 Staff view is simulated for the pilot: Alt+Shift+S, a link ending in `?staff`, or five taps on "Aspen Grove" in the header. It is not security; real sign-in comes with BYU hosting.
 
-- **Groups:** start a group (name, organizer, email, arrival, departure, deadline; the deadline defaults to 14 days before arrival) and get a ready-to-copy invitation email. See each group's status (Not started, In progress, Locked in, Past deadline) and number of people with needs, copy a reminder, reopen a locked group from its form, or delete a group.
-- **Weekly printout:** one sheet per week (Mon–Sun) for front and back of house.
+- **Groups:** start a group (name, organizer, email, camp week, deadline). The camp week is picked from the Saturday check-ins, May through September, for this summer and next; each week runs Saturday to Friday. The deadline defaults to 14 days before check-in. and get a ready-to-copy invitation email. See each group's status (Not started, In progress, Locked in, Past deadline) and number of people with needs, copy a reminder, reopen a locked group from its form, or delete a group.
+- **Weekly printout:** one sheet per camp week (Saturday to Friday) for front and back of house.
   - Top, for the kitchen: guests with needs, counts by restriction with serious ones flagged, plate combinations (e.g. `DF + GF`), and a list of serious allergies and celiac.
   - Below, for the dining hall: names and restrictions by group and family.
   - Groups not yet locked in are flagged. Download the sheet, open it, and print. On the GitHub Pages demo, Print works directly.
@@ -56,7 +56,7 @@ Staff view is simulated for the pilot: Alt+Shift+S, a link ending in `?staff`, o
 
 ## Demo (GitHub Pages)
 
-The page runs as a stand-alone demo on GitHub Pages (`*.github.io`) or at any address ending in `?demo`. It never connects to the shared record and opens with four made-up sample groups whose dates move with today's date (two locked in next week, one in progress, one not started). Organizer sample: code `FC-DEMO3`. Staff view: add `&staff` (for example `?demo&staff`).
+The page runs as a stand-alone demo on GitHub Pages (`*.github.io`) or at any address ending in `?demo`. It never connects to the shared record and opens with four made-up sample groups whose camp weeks move with today's date (two locked in next week, one in progress, one not started). Organizer sample: code `FC-DEMO3`. Staff view: add `&staff` (for example `?demo&staff`).
 
 To turn it on: repository **Settings › Pages**, Source **Deploy from a branch**, branch `main`, folder `/ (root)`. The demo is then at `https://stormfather-slc.github.io/AG-Family-Camp-Dietary/`.
 
