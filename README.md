@@ -56,7 +56,7 @@ Staff view is simulated for the pilot: Alt+Shift+S, a link ending in `?staff`, o
 
 ## Demo (GitHub Pages)
 
-The page runs as a stand-alone demo on GitHub Pages (`*.github.io`) or at any address ending in `?demo`. It never connects to the shared record and opens with four made-up sample groups whose camp weeks move with today's date (two locked in next week, one in progress, one not started). Organizer sample: code `FC-DEMO3`. Staff view: add `&staff` (for example `?demo&staff`).
+The page runs as a stand-alone demo on GitHub Pages (`*.github.io`) or at any address ending in `?demo`. It never connects to the shared record and opens with four made-up sample groups in two July camp weeks of the next summer season (two locked in, one in progress, one not started). Staff can put the samples back with **Reset sample groups**, on the demo or the live page. Organizer sample: code `FC-DEMO3`. Staff view: add `&staff` (for example `?demo&staff`).
 
 To turn it on: repository **Settings › Pages**, Source **Deploy from a branch**, branch `main`, folder `/ (root)`. The demo is then at `https://stormfather-slc.github.io/AG-Family-Camp-Dietary/`.
 
