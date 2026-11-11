@@ -1,4 +1,4 @@
-<title>Family Camp Dietary Needs</title>
+<title>Family Camp Dietary Needs &amp; Preferences</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -68,6 +68,8 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .facts dd{margin:0;font-weight:500}
 dl{margin:0}
 .note{background:var(--accent-soft);border-radius:6px;padding:10px 12px;font-size:14px}
+.note.callout{background:var(--accent-soft);border-left:4px solid var(--accent);border-radius:0 6px 6px 0;color:var(--fg)}
+.note.callout b{color:var(--title)}
 .note.warn{background:var(--warn-soft);color:var(--warn)}
 .fam{display:flex;flex-direction:column;gap:0;border:1px solid var(--line);border-radius:6px;overflow:hidden}
 .fam-h{background:var(--sunk);padding:6px 12px;font-size:13px;font-weight:600;display:flex;justify-content:space-between}
@@ -110,7 +112,7 @@ pre.mail{white-space:pre-wrap;font:13px/1.5 var(--body);background:var(--sunk);p
 </style>
 
 <header class="band"><div class="wrap">
-  <div class="brand"><b id="brandName">Aspen Grove</b><span>Family Camp dietary needs</span></div>
+  <div class="brand"><b id="brandName">Aspen Grove</b><span>Family Camp dietary needs &amp; preferences</span></div>
   <nav class="tabs" id="tabs" hidden></nav>
 </div></header>
 <div class="banner" id="banner" hidden><div class="wrap" id="bannerText"></div></div>
@@ -124,8 +126,8 @@ const OFFICE_PHONE="";        // shown to organizers when filled in
 const LS_KEY="fcdiet:groups:v3", STAFF_KEY="fcdiet:staff";
 const ALLERGENS=["Milk / dairy","Eggs","Wheat / gluten","Peanuts","Tree nuts","Fish","Shellfish","Soy","Sesame"];
 const CONDITIONS=["Celiac disease"];   // always strict, no seriousness question
-const DIETS=["Vegetarian","Vegan"];
-const ABBR={"Milk / dairy":"DF","Eggs":"EF","Wheat / gluten":"GF","Peanuts":"PN","Tree nuts":"TN","Fish":"FISH","Shellfish":"SHELL","Soy":"SOY","Sesame":"SES","Celiac disease":"CEL","Vegetarian":"VEG","Vegan":"VGN"};
+const DIETS=["Vegetarian","Vegan","Halal","Kosher"];
+const ABBR={"Milk / dairy":"DF","Eggs":"EF","Wheat / gluten":"GF","Peanuts":"PN","Tree nuts":"TN","Fish":"FISH","Shellfish":"SHELL","Soy":"SOY","Sesame":"SES","Celiac disease":"CEL","Vegetarian":"VEG","Vegan":"VGN","Halal":"HAL","Kosher":"KOS"};
 const LEVELS=[["intol","Intolerance"],["mild","Allergy, mild"],["severe","Allergy, severe"],["air","Allergy, airborne / anaphylactic"],["pref","Preference"]];
 const LEVEL_TEXT={intol:"intolerance",mild:"mild allergy",severe:"severe allergy",air:"airborne allergy",pref:"preference"};
 const isSerious=it=>it.r==="Celiac disease"||it.level==="severe"||it.level==="air";
@@ -210,18 +212,18 @@ function statusOf(g){
 }
 const linkFor=code=>(PAGE_URL||location.href.split("#")[0])+"#"+code;
 function inviteText(g){
-  return {subject:`Dietary needs for your Aspen Grove stay (${g.name})`,
+  return {subject:`Dietary needs and preferences for your Aspen Grove stay (${g.name})`,
   body:`Hi ${(g.organizer||"").split(" ")[0]||"there"},
 
 We're looking forward to hosting ${g.name} at Aspen Grove, ${fmtRange(g.arrive,g.depart)}.
 
-So our kitchen can plan for everyone, please list anyone in your group with a food allergy, intolerance, or dietary restriction on this page:
+So our kitchen can plan for everyone, please list anyone in your group with a food allergy, intolerance, or dietary restriction, and anyone with a dietary preference such as vegetarian, vegan, halal, or kosher, on this page:
 
 ${linkFor(g.code)}
 
 If the link doesn't open your group, enter this code on the page: ${g.code}
 
-Please finish and lock in your list by ${fmt(g.deadline,{weekday:"long",month:"long",day:"numeric"})}. If no one in your group has dietary needs, you can say so on the page.
+Please finish and lock in your list by ${fmt(g.deadline,{weekday:"long",month:"long",day:"numeric"})}. If no one in your group has dietary needs or preferences, you can say so on the page.
 
 We only use this information to prepare meals, and we delete it at the end of your stay.
 
@@ -229,10 +231,10 @@ Thank you,
 Aspen Grove`}}
 function reminderText(g){
   const n=(g.guests||[]).length;
-  return {subject:`Reminder: dietary needs for ${g.name}`,
+  return {subject:`Reminder: dietary needs and preferences for ${g.name}`,
   body:`Hi ${(g.organizer||"").split(" ")[0]||"there"},
 
-A quick reminder to finish your group's dietary list by ${fmt(g.deadline,{weekday:"long",month:"long",day:"numeric"})}. ${n?`You've listed ${n} ${n===1?"person":"people"} so far; when the list is complete, press Lock in.`:"Nothing has been entered yet. If no one has dietary needs, you can say so on the page."}
+A quick reminder to finish your group's dietary list by ${fmt(g.deadline,{weekday:"long",month:"long",day:"numeric"})}. ${n?`You've listed ${n} ${n===1?"person":"people"} so far; when the list is complete, press Lock in.`:"Nothing has been entered yet. If no one has dietary needs or preferences, you can say so on the page."}
 
 ${linkFor(g.code)}  (code ${g.code})
 
@@ -280,7 +282,7 @@ function renderOrg(){
   const app=$("#app");
   if(!current||current.missing||current.gone){
     app.innerHTML=`<section class="card" aria-labelledby="h-enter">
-      <h1 id="h-enter">Tell us about dietary needs</h1>
+      <h1 id="h-enter">Tell us about dietary needs and preferences</h1>
       <p>Group organizers: open the link in your invitation email, or enter the group code from that email.</p>
       ${current&&current.missing?`<p class="note warn">We couldn't find a group with code <span class="code">${esc(current.code)}</span>. Check the code in your email, or call the Aspen Grove office${OFFICE_PHONE?" at "+esc(OFFICE_PHONE):""}.</p>`:""}
       ${current&&current.gone?`<p class="note">This group's stay has ended, so its dietary details have been deleted.</p>`:""}
@@ -306,16 +308,17 @@ function renderOrg(){
   </section>
   ${locked?`<section class="note" role="status"><b>Locked in ${g.lockedAt?esc(fmt(iso(g.lockedAt),{month:"short",day:"numeric"})):""}.</b> Thank you. If anything changes, call the Aspen Grove office${OFFICE_PHONE?" at "+esc(OFFICE_PHONE):""} and we'll update it for you.${staffMode?` <button class="btn sm ghost" data-act="reopen">Reopen for the organizer</button>`:""}</section>`:""}
   <section class="card" aria-labelledby="h-list">
-    <div class="row between"><h2 id="h-list">People with dietary needs <span class="muted" style="font-weight:400">(${needCount})</span></h2>${ro?"":`<button class="btn" data-act="add">Add a person</button>`}</div>
-    <p class="small muted">List only the people who have a food allergy, intolerance, or dietary restriction. We ask for a name and the restriction only, and delete this list the day after your group leaves.</p>
+    <div class="row between"><h2 id="h-list">People with dietary needs/preferences <span class="muted" style="font-weight:400">(${needCount})</span></h2>${ro?"":`<button class="btn" data-act="add">Add a person</button>`}</div>
+    <p class="note callout"><b>Include preferences, not just allergies.</b> Please list anyone who is vegetarian, vegan, eats halal or kosher, or follows any other diet, along with anyone who has a food allergy, intolerance, or restriction.</p>
+    <p class="small muted">We ask for a name and the need or preference only, and delete this list the day after your group leaves.</p>
     ${needCount?Object.entries(fams).map(([f,ps])=>`<div class="fam"><div class="fam-h"><span>${esc(f)}</span><span class="muted">${ps.length}</span></div>${ps.map(p=>`<div class="guest"><div class="who"><b>${esc(p.name)}</b><div class="chips">${p.items.map(it=>`<span class="chip ${isSerious(it)?"serious":""}">${esc(itemLabel(it))}</span>`).join("")}</div></div>${ro?"":`<div class="row"><button class="btn sm quiet" data-act="edit" data-id="${p.id}">Edit</button><button class="btn sm quiet" data-act="rm" data-id="${p.id}">Remove</button></div>`}</div>`).join("")}</div>`).join("")
-      :`<div class="empty">${ro?(g.noneNeeded?"No one in this group has dietary needs.":"No one listed."):"No one listed yet. Press <b>Add a person</b> for each guest with a dietary need."}</div>`}
-    ${!ro&&!needCount?`<label class="row" style="font-size:14px"><input type="checkbox" id="noneNeeded" ${g.noneNeeded?"checked":""}> No one in our group has dietary needs</label>`:""}
+      :`<div class="empty">${ro?(g.noneNeeded?"No one in this group has dietary needs or preferences.":"No one listed."):"No one listed yet. Press <b>Add a person</b> for each guest with a dietary need or preference."}</div>`}
+    ${!ro&&!needCount?`<label class="row" style="font-size:14px"><input type="checkbox" id="noneNeeded" ${g.noneNeeded?"checked":""}> No one in our group has dietary needs or preferences</label>`:""}
   </section>
   ${ro?"":`<section class="card" aria-labelledby="h-lock">
     <h2 id="h-lock">Lock in</h2>
     <p>When your list is complete, lock it in. After that, changes need a call to the Aspen Grove office.</p>
-    ${!needCount&&!g.noneNeeded?`<p class="note warn">Add at least one person, or check "No one in our group has dietary needs."</p>`:""}
+    ${!needCount&&!g.noneNeeded?`<p class="note warn">Add at least one person, or check "No one in our group has dietary needs or preferences."</p>`:""}
     <div class="row between"><span class="save" id="saveState" aria-live="polite">${esc(saveState)}</span><button class="btn" data-act="lock" ${!needCount&&!g.noneNeeded||locked?"disabled":""}>Lock in my list</button></div>
   </section>`}`;
   const nn=$("#noneNeeded");if(nn)nn.addEventListener("change",()=>{g.noneNeeded=nn.checked;queueSave();renderOrg()});
@@ -338,7 +341,7 @@ $("#app").addEventListener("click",async e=>{
     if(a==="add")return personDialog(null);
     if(a==="edit")return personDialog(current.guests.find(p=>p.id===b.dataset.id));
     if(a==="rm"){const p=current.guests.find(x=>x.id===b.dataset.id);return confirmDialog(`Remove ${p.name}?`,"They'll be taken off your group's list.","Remove",()=>{current.guests=current.guests.filter(x=>x.id!==p.id);queueSave();renderOrg()})}
-    if(a==="lock")return confirmDialog("Lock in your list?",`You're confirming ${current.guests.length?current.guests.length+" "+(current.guests.length===1?"person":"people")+" with dietary needs":"that no one in your group has dietary needs"}. After you lock in, changes need a call to the Aspen Grove office.`,"Lock in",()=>{current.status="locked";current.lockedAt=new Date().toISOString();queueSave();renderOrg();toast("Locked in. Thank you!")});
+    if(a==="lock")return confirmDialog("Lock in your list?",`You're confirming ${current.guests.length?current.guests.length+" "+(current.guests.length===1?"person":"people")+" with dietary needs or preferences":"that no one in your group has dietary needs or preferences"}. After you lock in, changes need a call to the Aspen Grove office.`,"Lock in",()=>{current.status="locked";current.lockedAt=new Date().toISOString();queueSave();renderOrg();toast("Locked in. Thank you!")});
     if(a==="reopen"){current.status="open";current.lockedAt=null;queueSave();renderOrg();return toast("Reopened. The organizer can edit again.")}
   }
   if(view==="groups")return groupAction(a,b.dataset.code,b);
@@ -358,24 +361,32 @@ function personDialog(p){
   const fams=[...new Set((current.guests||[]).map(x=>(x.family||"").trim()).filter(Boolean))];
   const ov=document.createElement("div");ov.className="overlay";
   const pick=r=>p.items.find(i=>i.r===r);
+  // "Not listed above": one always-visible box; comma-separated entries become separate items, each with its own seriousness.
+  const otherLv={};p.items.filter(i=>i.r==="Other").forEach(i=>{otherLv[(i.text||"").trim().toLowerCase()]=i.level||""});
+  let otherText=p.items.filter(i=>i.r==="Other").map(i=>(i.text||"").trim()).filter(Boolean).join(", ");
+  p.items=p.items.filter(i=>i.r!=="Other");
+  const others=()=>{const seen=new Set();return otherText.split(/[,;\n]/).map(s=>s.trim()).filter(s=>{const k=s.toLowerCase();if(!s||seen.has(k))return false;seen.add(k);return true}).map(text=>({r:"Other",text,level:otherLv[text.toLowerCase()]||""}))};
+  const lvOpts=(i)=>`<option value="">Not sure</option>${LEVELS.filter(([v])=>DIETS.includes(i.r)?v==="pref":true).map(([v,l])=>`<option value="${v}" ${i.level===v?"selected":""}>${l}</option>`).join("")}`;
+  const lvHTML=()=>{const std=p.items.filter(i=>i.r!=="Celiac disease"), oth=others();if(!std.length&&!oth.length)return "";
+    return `<div class="f"><span style="font-size:13px;font-weight:500">How serious is each? <span class="muted" style="font-weight:400">Leave as "Not sure" if you don't know.</span></span>
+        <div class="lv">${std.map(i=>`<span>${esc(i.r)}</span><select data-lv="${esc(i.r)}" aria-label="How serious: ${esc(i.r)}">${lvOpts(i)}</select>`).join("")}${oth.map(i=>`<span>${esc(i.text)}</span><select data-olv="${esc(i.text.toLowerCase())}" aria-label="How serious: ${esc(i.text)}">${lvOpts(i)}</select>`).join("")}</div></div>`};
   const draw=()=>{
-    const other=pick("Other");
-    const lvRows=p.items.filter(i=>i.r!=="Celiac disease");
     ov.innerHTML=`<div class="dialog" role="dialog" aria-modal="true" aria-labelledby="pd-h">
       <h2 id="pd-h">${editing?"Edit":"Add a person"}</h2>
       <div class="grid2">
         <label class="f">Name<input type="text" id="pd-name" value="${esc(p.name)}" autocomplete="off"></label>
-        <label class="f">Family or household <span class="muted" style="font-weight:400">optional</span><select id="pd-famsel"><option value="" ${!newFam&&!p.family?"selected":""}>None</option>${fams.map(f=>`<option value="${esc(f)}" ${!newFam&&p.family===f?"selected":""}>${esc(f)}</option>`).join("")}<option value="__new" ${newFam?"selected":""}>+ New family or household…</option></select></label>
+        <label class="f"><span>Family or Household <span class="muted" style="font-weight:400">(Optional)</span></span><select id="pd-famsel"><option value="" ${!newFam&&!p.family?"selected":""}>None</option>${fams.map(f=>`<option value="${esc(f)}" ${!newFam&&p.family===f?"selected":""}>${esc(f)}</option>`).join("")}<option value="__new" ${newFam?"selected":""}>+ New family or household…</option></select></label>
         ${newFam?`<label class="f" style="grid-column:1/-1">Name of the family or household<input type="text" id="pd-fam" value="${esc(p.family)}" placeholder="e.g. Larsen (Ethan & Amy)" autocomplete="off"><span class="muted" style="font-weight:400">You can pick it for the next person you add.</span></label>`:""}
       </div>
-      <fieldset style="border:0;padding:0;margin:0"><legend style="font-size:13px;font-weight:500;margin-bottom:4px">Dietary needs</legend>
+      <fieldset style="border:0;padding:0;margin:0"><legend style="font-size:13px;font-weight:500;margin-bottom:4px">Dietary needs and preferences</legend>
         <div class="picks">
           <div class="h">Allergies and intolerances</div>${ALLERGENS.map(r=>ck(r)).join("")}
-          <div class="h">Conditions and diets</div>${CONDITIONS.map(r=>ck(r)).join("")}${DIETS.map(r=>ck(r)).join("")}${ck("Other","Something else")}
+          <div class="h">Medical conditions</div>${CONDITIONS.map(r=>ck(r)).join("")}
+          <div class="h">Diets and preferences</div>${DIETS.map(r=>ck(r)).join("")}
+          <div class="h" id="pd-other-h">Not listed above</div>
+          <div style="grid-column:1/-1;display:flex;flex-direction:column;gap:4px"><input type="text" id="pd-other" aria-labelledby="pd-other-h" value="${esc(otherText)}" placeholder="e.g. strawberries, pescatarian, no pork" autocomplete="off"><span class="small muted">Separate items with commas.</span></div>
         </div></fieldset>
-      ${other?`<label class="f">What else?<input type="text" id="pd-other" value="${esc(other.text||"")}" placeholder="e.g. strawberries, low sodium"></label>`:""}
-      ${lvRows.length?`<div class="f"><span style="font-size:13px;font-weight:500">How serious is each? <span class="muted" style="font-weight:400">Leave as "Not sure" if you don't know.</span></span>
-        <div class="lv">${lvRows.map(i=>`<span>${esc(i.r==="Other"?(i.text||"Something else"):i.r)}</span><select data-lv="${esc(i.r)}" aria-label="How serious: ${esc(i.r)}"><option value="">Not sure</option>${LEVELS.filter(([v])=>DIETS.includes(i.r)?v==="pref":true).map(([v,l])=>`<option value="${v}" ${i.level===v?"selected":""}>${l}</option>`).join("")}</select>`).join("")}</div></div>`:""}
+      <div id="pd-lvbox">${lvHTML()}</div>
       ${p.items.some(i=>i.r==="Celiac disease")?`<p class="small muted">Celiac disease is always treated as strictly gluten-free.</p>`:""}
       <p class="small" id="pd-err" role="alert" style="color:var(--bad);font-weight:500"></p>
       <div class="row" style="justify-content:flex-end"><button class="btn quiet" id="pd-cancel" type="button">Cancel</button><button class="btn" id="pd-ok" type="button">${editing?"Save":"Add"}</button></div>
@@ -383,8 +394,10 @@ function personDialog(p){
     function ck(r,l){return `<label><input type="checkbox" data-pick="${esc(r)}" ${pick(r)?"checked":""}> ${esc(l||r)}</label>`}
   };
   const read=()=>{const n=ov.querySelector("#pd-name");if(n)p.name=n.value;
-    const fs=ov.querySelector("#pd-famsel");if(fs){newFam=fs.value==="__new";if(newFam){const f=ov.querySelector("#pd-fam");p.family=f?f.value:""}else p.family=fs.value}const o=ov.querySelector("#pd-other");if(o){const it=pick("Other");if(it)it.text=o.value}
-    ov.querySelectorAll("[data-lv]").forEach(s=>{const it=pick(s.dataset.lv);if(it)it.level=s.value})};
+    const fs=ov.querySelector("#pd-famsel");if(fs){newFam=fs.value==="__new";if(newFam){const f=ov.querySelector("#pd-fam");p.family=f?f.value:""}else p.family=fs.value}readLv();const o=ov.querySelector("#pd-other");if(o)otherText=o.value};
+  const readLv=()=>{ov.querySelectorAll("[data-lv]").forEach(s=>{const it=pick(s.dataset.lv);if(it)it.level=s.value});
+    ov.querySelectorAll("[data-olv]").forEach(s=>{otherLv[s.dataset.olv]=s.value})};
+  ov.addEventListener("input",e=>{if(e.target.id!=="pd-other")return;readLv();otherText=e.target.value;ov.querySelector("#pd-lvbox").innerHTML=lvHTML()});
   draw();document.body.appendChild(ov);ov.querySelector("#pd-name").focus();
   ov.addEventListener("change",e=>{
     if(e.target.id==="pd-famsel"){read();draw();const f=ov.querySelector(newFam?"#pd-fam":"#pd-famsel");if(f)f.focus();return}
@@ -399,10 +412,10 @@ function personDialog(p){
     p.name=p.name.trim();p.family=p.family.trim();const err=ov.querySelector("#pd-err");
     if(!p.name){err.textContent="Enter the person's name.";return}
     if(newFam&&!p.family){err.textContent="Name the new family or household, or choose None.";return}
-    if(!p.items.length){err.textContent="Choose at least one dietary need.";return}
-    const o=pick("Other");if(o&&!String(o.text||"").trim()){err.textContent="Say what the other need is, or uncheck Something else.";return}
+    if(!p.items.length&&!others().length){err.textContent="Choose at least one dietary need or preference, or type one under Not listed above.";return}
     const dup=current.guests.find(x=>x.id!==p.id&&x.name.trim().toLowerCase()===p.name.toLowerCase());
     if(dup&&!ov.dataset.dupOk){err.textContent=`${dup.name} is already listed. Press ${editing?"Save":"Add"} again to list them twice, or Cancel and edit the existing entry.`;ov.dataset.dupOk="1";return}
+    p.items=[...p.items,...others()];
     const i=current.guests.findIndex(x=>x.id===p.id);if(i>=0)current.guests[i]=p;else current.guests.push(p);
     current.noneNeeded=false;close();queueSave();renderOrg();toast(editing?"Saved":`${p.name} added`);
   });
@@ -493,19 +506,19 @@ function sheetHTML(mon){
   const comboRows=Object.entries(combos).sort((a,b)=>b[1]-a[1]);
   const serious=people.filter(p=>p.items.some(isSerious));
   const pending=gs.filter(g=>g.status!=="locked");
-  return `<h2>Dietary needs · camp week of ${esc(fmt(mon,{month:"long",day:"numeric",year:"numeric"}))}</h2>
+  return `<h2>Dietary needs &amp; preferences · camp week of ${esc(fmt(mon,{month:"long",day:"numeric",year:"numeric"}))}</h2>
   <p style="color:#555;margin-top:2px">${esc(fmt(mon))} – ${esc(fmt(sun))} · ${gs.length} ${gs.length===1?"group":"groups"} · printed ${esc(new Date().toLocaleString(undefined,{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}))}</p>
   ${pending.length?`<p class="flag" style="margin-top:8px">Not locked in yet: ${pending.map(g=>esc(g.name)).join(", ")}. Counts may change.</p>`:""}
   <div class="sec"><h3>Kitchen: special plates</h3>
-  <p style="margin:6px 0"><span class="tot">${people.length}</span> guests with dietary needs (one special plate each per meal)</p>
-  ${people.length?`<table><thead><tr><th>Restriction</th><th>Code</th><th class="num">Guests</th><th class="num">Serious</th></tr></thead><tbody>${rows.map(([k,o])=>`<tr><td>${esc(k)}</td><td>${esc(o.abbr)}</td><td class="num">${o.n}</td><td class="num">${o.ser?`<span class="flag">${o.ser}</span>`:"–"}</td></tr>`).join("")}</tbody></table>
+  <p style="margin:6px 0"><span class="tot">${people.length}</span> guests with dietary needs or preferences (one special plate each per meal)</p>
+  ${people.length?`<table><thead><tr><th>Need or preference</th><th>Code</th><th class="num">Guests</th><th class="num">Serious</th></tr></thead><tbody>${rows.map(([k,o])=>`<tr><td>${esc(k)}</td><td>${esc(o.abbr)}</td><td class="num">${o.n}</td><td class="num">${o.ser?`<span class="flag">${o.ser}</span>`:"–"}</td></tr>`).join("")}</tbody></table>
   <h3 style="margin-top:14px">Plate combinations</h3>
-  <table><thead><tr><th>Plate</th><th class="num">Count</th></tr></thead><tbody>${comboRows.map(([k,n])=>`<tr><td>${esc(k)}</td><td class="num">${n}</td></tr>`).join("")}</tbody></table>`:`<p style="color:#555">No dietary needs listed for this week.</p>`}
+  <table><thead><tr><th>Plate</th><th class="num">Count</th></tr></thead><tbody>${comboRows.map(([k,n])=>`<tr><td>${esc(k)}</td><td class="num">${n}</td></tr>`).join("")}</tbody></table>`:`<p style="color:#555">No dietary needs or preferences listed for this week.</p>`}
   ${serious.length?`<h3 style="margin-top:14px" class="flag">Serious allergies and celiac (${serious.length})</h3><table><tbody>${serious.map(p=>`<tr><td><b>${esc(p.name)}</b></td><td>${esc(p.group)}</td><td>${p.items.filter(isSerious).map(it=>esc(itemLabel(it))).join(", ")}</td></tr>`).join("")}</tbody></table>`:""}
   </div>
   <div class="sec"><h3>Dining hall: who needs a special plate</h3>
   ${gs.map(g=>{const fams=groupByFamily(g.guests||[]);return `<div class="gh">${esc(g.name)} · ${esc(fmtRange(g.arrive,g.depart))} · ${(g.guests||[]).length} ${(g.guests||[]).length===1?"guest":"guests"}${g.status!=="locked"?` · <span class="flag">not locked in</span>`:""}</div>
-    ${(g.guests||[]).length?Object.entries(fams).map(([f,ps])=>`<div class="fh">${esc(f)}</div><table><tbody>${ps.map(p=>`<tr><td style="width:34%"><b>${esc(p.name)}</b></td><td>${p.items.map(it=>isSerious(it)?`<span class="flag">${esc(itemLabel(it))}</span>`:esc(itemLabel(it))).join(", ")}</td><td style="width:16%">${esc(p.items.map(itemShort).join(" + "))}</td></tr>`).join("")}</tbody></table>`).join(""):`<p style="color:#555;padding:4px 8px">${g.noneNeeded?"No dietary needs.":"Nothing listed yet."}</p>`}`}).join("")||`<p style="color:#555">No groups this week.</p>`}
+    ${(g.guests||[]).length?Object.entries(fams).map(([f,ps])=>`<div class="fh">${esc(f)}</div><table><tbody>${ps.map(p=>`<tr><td style="width:34%"><b>${esc(p.name)}</b></td><td>${p.items.map(it=>isSerious(it)?`<span class="flag">${esc(itemLabel(it))}</span>`:esc(itemLabel(it))).join(", ")}</td><td style="width:16%">${esc(p.items.map(itemShort).join(" + "))}</td></tr>`).join("")}</tbody></table>`).join(""):`<p style="color:#555;padding:4px 8px">${g.noneNeeded?"No dietary needs or preferences.":"Nothing listed yet."}</p>`}`}).join("")||`<p style="color:#555">No groups this week.</p>`}
   </div>
   <p style="color:#777;font-size:11px;margin-top:18px">Codes: ${Object.entries(ABBR).map(([k,v])=>v+" = "+k).join(" · ")} · OTHER = see note. Red = serious allergy or celiac. Confidential: dispose of this sheet at the end of the week.</p>`;
 }
@@ -523,12 +536,12 @@ function renderPrintout(){
   <article class="sheet" id="sheet">${allGroups==null?"Loading…":sheetHTML(printWeek)}</article>`;
 }
 async function downloadSheet(){
-  const html=`<!doctype html><html><head><meta charset="utf-8"><title>Dietary needs ${printWeek}</title><style>
+  const html=`<!doctype html><html><head><meta charset="utf-8"><title>Dietary needs and preferences ${printWeek}</title><style>
   body{font:13px/1.45 "IBM Plex Sans",Arial,sans-serif;color:#111;margin:24px}h2,h3{color:#002e5d;margin:0}table{border-collapse:collapse;width:100%;margin-top:4px}td,th{text-align:left;padding:5px 8px;border-bottom:1px solid #ddd;vertical-align:top}th{font-size:11px;text-transform:uppercase;color:#555}.num{text-align:right}.flag{color:#c41230;font-weight:700}.sec{margin-top:18px}.gh{background:#eef2f7;padding:6px 8px;font-weight:600;margin-top:12px;break-after:avoid}.fh{font-weight:600;font-size:11px;color:#555;padding:6px 8px 2px;text-transform:uppercase}.tot{font-size:22px;font-weight:700;color:#002e5d}.noprint{margin-bottom:16px}@media print{.noprint{display:none}body{margin:0}}
   </style></head><body><div class="noprint"><button onclick="window.print()">Print this sheet</button></div>${sheetHTML(printWeek)}</body></html>`;
   let dl=null;try{dl=window.claude&&claude.use?await claude.use("downloads"):null}catch(e){}
   if(!dl){const w=window.open("","_blank");if(w){w.document.write(html);w.document.close();return}toast("Downloads aren't available in this view. Open the page in claude.ai to download.");return}
-  try{await dl.save({filename:`dietary-needs-week-of-${printWeek}.html`,data:html})}catch(e){if(e&&e.code!=="declined")toast("Couldn't download the printout.")}
+  try{await dl.save({filename:`dietary-needs-preferences-week-of-${printWeek}.html`,data:html})}catch(e){if(e&&e.code!=="declined")toast("Couldn't download the printout.")}
 }
 
 // ---------- start ----------
