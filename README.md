@@ -1,6 +1,6 @@
 # AG Family Camp Dietary
 
-A pilot web form where each BYU Aspen Grove Family Camp group's organizer lists the guests with food allergies, intolerances, or dietary restrictions. Staff get one weekly printout for the kitchen and the dining hall.
+A pilot web form where each BYU Aspen Grove Family Camp group's organizer lists the guests with food allergies, intolerances, or dietary restrictions, and anyone with a dietary preference (vegetarian, vegan, halal, kosher, and so on). Staff get one weekly printout for the kitchen and the dining hall.
 
 **Status:** Pilot. Built Nov 9, 2026, alongside [AG Conference Reservation](https://github.com/Stormfather-SLC/AG-Conference-Reservation), whose patterns it reuses.
 
@@ -16,22 +16,22 @@ Family Camp groups only provide dietary information. Rooms, meals, and A/V don't
 ### Organizers
 - Open their group from the invitation link (`…#FC-XXXXX`) or by entering the group code. Only Aspen Grove starts groups.
 - Group name, dates, and deadline are read-only; changes go through the office.
-- Add each person with a dietary need: name, optional family or household (choose an existing one or "+ New family or household"), one or more restrictions (the nine major allergens, celiac disease, vegetarian, vegan, or something else), and how serious each one is. Seriousness is optional so organizers aren't blocked by details they don't have. Celiac disease is always treated as strict.
-- If no one has dietary needs, check a box instead.
+- Add each person with a dietary need or preference: name, optional family or household (choose an existing one or "+ New family or household"), one or more items (the nine major allergens, celiac disease, vegetarian, vegan, halal, kosher), and how serious each one is. Anything else goes in the always-visible **Not listed above** box; comma-separated entries become separate items, each with its own seriousness (e.g. `strawberries, no pork`). Seriousness is optional so organizers aren't blocked by details they don't have. Celiac disease is always treated as strict.
+- If no one has dietary needs or preferences, check a box instead.
 - Lock in when done. After lock-in, changes need a call to the office.
 
 ### Staff
 Staff view is simulated for the pilot: Alt+Shift+S, a link ending in `?staff`, or five taps on "Aspen Grove" in the header. It is not security; real sign-in comes with BYU hosting.
 
-- **Groups:** start a group (name, organizer, email, camp week, deadline). The camp week is picked from the Saturday check-ins, May through September, for this summer and next; each week runs Saturday to Friday. The deadline defaults to 14 days before check-in. and get a ready-to-copy invitation email. See each group's status (Not started, In progress, Locked in, Past deadline) and number of people with needs, copy a reminder, reopen a locked group from its form, or delete a group.
+- **Groups:** start a group (name, organizer, email, camp week, deadline). The camp week is picked from the Saturday check-ins, May through September, for this summer and next; each week runs Saturday to Friday. The deadline defaults to 14 days before check-in. and get a ready-to-copy invitation email. See each group's status (Not started, In progress, Locked in, Past deadline) and number of people with needs or preferences, copy a reminder, reopen a locked group from its form, or delete a group.
 - **Weekly printout:** one sheet per camp week (Saturday to Friday) for front and back of house.
-  - Top, for the kitchen: guests with needs, counts by restriction with serious ones flagged, plate combinations (e.g. `DF + GF`), and a list of serious allergies and celiac.
+  - Top, for the kitchen: guests with needs or preferences, counts by item with serious ones flagged, plate combinations (e.g. `DF + GF`), and a list of serious allergies and celiac.
   - Below, for the dining hall: names and restrictions by group and family.
   - Groups not yet locked in are flagged. Download the sheet, open it, and print. On the GitHub Pages demo, Print works directly.
 
 ## Data and retention
 
-- The form asks only for a name and the restriction. No other personal information.
+- The form asks only for a name and the need or preference. No other personal information.
 - Each group's record is deleted the day after it departs, matching Aspen Grove's current policy of keeping guest allergen information only through the guest's week. Deletion runs when staff open the Groups or Weekly printout tab.
 - Demos use made-up data only. Real families' details never go in this repository; `.gitignore` blocks `*.json`.
 
@@ -50,9 +50,9 @@ Staff view is simulated for the pilot: Alt+Shift+S, a link ending in `?staff`, o
 | `name`, `organizer`, `email` | Set by staff |
 | `arrive`, `depart`, `deadline` | `YYYY-MM-DD` |
 | `status` | `open` or `locked`; `lockedAt` when locked |
-| `noneNeeded` | Organizer said no one has dietary needs |
+| `noneNeeded` | Organizer said no one has dietary needs or preferences |
 | `touched` | Organizer has saved at least once |
-| `guests[]` | `{id, name, family, items:[{r, level, text?}]}`; `level` is `intol`, `mild`, `severe`, `air`, `pref`, or blank; `text` holds an "other" need |
+| `guests[]` | `{id, name, family, items:[{r, level, text?}]}`; `level` is `intol`, `mild`, `severe`, `air`, `pref`, or blank; `r` is `Other` for typed entries, one item per comma-separated entry, with `text` holding the entry |
 
 ## Demo (GitHub Pages)
 
