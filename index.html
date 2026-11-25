@@ -126,6 +126,11 @@ pre.mail{white-space:pre-wrap;font:13px/1.5 var(--body);background:var(--sunk);p
 .sheet .miss{color:#9a5a00}
 .sheet .k-spec td{background:#f6f8fb}
 .sheet .pnotes{margin-top:18px;border:1px solid #ccc;border-radius:4px;min-height:80px;padding:6px 8px;font-size:12px;color:#555}
+.sheet .ppage{break-after:page}
+.sheet .ppage:last-child{break-after:auto}
+.sheet .ppage+.ppage{border-top:1px dashed #bbb;margin-top:22px;padding-top:12px}
+.sheet .pmini{font-size:12px;color:#555;border-bottom:2px solid #002e5d;padding-bottom:6px;margin-bottom:8px}
+.sheet .pmini b{color:#002e5d;font-size:14px}
 .sheet .pendnote{background:#fdf0d9;color:#9a5a00;padding:6px 10px;border-radius:4px;margin:8px 0;font-size:12px}
 @media print{
   body[data-view="kitchen"] header.band,body[data-view="week"] header.band,body[data-view="printout"] header.band,
@@ -657,13 +662,19 @@ function productionBody(d){
   const spl=[...people].sort((a,b)=>(b.items.some(isSerious)-a.items.some(isSerious))||a.group.localeCompare(b.group)||a.name.localeCompare(b.name));
   const nd=addDays(d,1),nsite=onSite(nd).length,nm=mealsOn(nd),np=peopleOn(nd).length;
   const tomorrow=nsite?`<table class="ptab"><tbody>${nm.map(m=>`<tr><th scope="row">${esc(m.label)}</th><td>${m.items.length?esc(m.items.join(", ")):`<span class="miss">Menu pending</span>`}</td><td class="small muted">${esc(fmtSpan(m))}</td><td class="num">${np?np+" special":""}</td></tr>`).join("")}</tbody></table>`:`<p style="color:#555;margin:4px 0">No groups on site tomorrow.</p>`;
-  return `<div class="dpage"><div class="top"><div><div class="org">Aspen Grove · Family Camp kitchen production list</div><h1>${esc(fmt(d,{weekday:"long",month:"long",day:"numeric",year:"numeric"}))}</h1><div>${groupsLine(gs,d)}</div></div>${stampHTML(gs)}</div>
+  // Each meal and the special plates start on their own printed page, each with a small header repeating the date.
+  const dateTxt=esc(fmt(d,{weekday:"long",month:"long",day:"numeric",year:"numeric"}));
+  const mini=label=>`<div class="pmini"><b>${dateTxt}</b> · Family Camp kitchen production list · ${esc(label)}</div>`;
+  const first=`<div class="top"><div><div class="org">Aspen Grove · Family Camp kitchen production list</div><h1>${esc(fmt(d,{weekday:"long",month:"long",day:"numeric",year:"numeric"}))}</h1><div>${groupsLine(gs,d)}</div></div>${stampHTML(gs)}</div>
     <p class="small" style="color:#555">Chefs fill in PAR. Special plates assume every guest listed eats every meal. Counts are guests with dietary needs or preferences only; total guest counts are not collected.</p>
-    ${pendHTML(d)}
-    ${meals.map(m=>mealBlock(m,people,true)).join("")||`<p style="color:#555">No meals are set for this day.</p>`}
+    ${pendHTML(d)}`;
+  const pages=meals.map((m,i)=>(i===0?first:mini(m.label))+mealBlock(m,people,true));
+  const last=(meals.length?mini("Special plates"):first+`<p style="color:#555">No meals are set for this day.</p>`)+`
     ${spl.length?`<div class="sec"><h3>Special plates today · ${spl.length} guest${spl.length===1?"":"s"}</h3><table class="ptab"><tbody>${spl.map(p=>`<tr><td class="cb"><span class="box"></span></td><td style="width:26%"><b>${esc(p.name)}</b></td><td class="small" style="width:22%">${esc(p.group)}</td><td>${platesHTML(p)}</td></tr>`).join("")}</tbody></table></div>`:""}
     <div class="sec"><h3>Tomorrow · ${esc(fmt(nd,{weekday:"long",month:"short",day:"numeric"}))}</h3>${tomorrow}</div>
-    <div class="pnotes">Notes</div></div>`;
+    <div class="pnotes">Notes</div>`;
+  pages.push(last);
+  return `<div class="dpage">${pages.map(h=>`<div class="ppage">${h}</div>`).join("")}</div>`;
 }
 
 // Weekly meal schedule: one summary page, then one page per day.
@@ -746,7 +757,7 @@ async function downloadKitchenSheet(title,body,filename){
   body{font:13px/1.45 "IBM Plex Sans",Arial,sans-serif;color:#111;margin:24px}h1,h2,h3{color:#002e5d;margin:0}table{border-collapse:collapse;width:100%;margin-top:4px}td,th{text-align:left;padding:5px 8px;border-bottom:1px solid #ddd;vertical-align:top}th{font-size:11px;text-transform:uppercase;color:#555}.num{text-align:right}.flag{color:#c41230;font-weight:700}.miss{color:#9a5a00}.muted{color:#555}.small{font-size:12px}.sec{margin-top:18px}.gh{background:#eef2f7;padding:6px 8px;font-weight:600}
   .dpage{break-after:page;padding-bottom:18px}.dpage:last-child{break-after:auto}.top{display:flex;justify-content:space-between;gap:12px;border-bottom:2px solid #002e5d;padding-bottom:8px;margin-bottom:10px}.org{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:#555}.top h1{font-size:22px;margin:2px 0}.stamp{font-size:12px;font-weight:600;color:#1f7a45;text-align:right}.stamp.draft{color:#9a5a00}.stamp span{display:block;font-weight:400;color:#555}
   .dsvc{margin-top:14px;break-inside:avoid}.dsvc h2{font-size:16px;display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid #ccc;padding-bottom:3px}.dtot{font-size:13px;font-weight:600;color:#555}.ptab td.cb{width:26px}.ptab td.pc,.ptab th.pc{width:110px}
-  .box{display:inline-block;width:14px;height:14px;border:1.5px solid #555;border-radius:2px;vertical-align:middle}.par{display:inline-block;width:90px;border-bottom:1px solid #555;height:16px}.k-spec td{background:#f6f8fb}.pnotes{margin-top:18px;border:1px solid #ccc;border-radius:4px;min-height:80px;padding:6px 8px;font-size:12px;color:#555}.pendnote{background:#fdf0d9;color:#9a5a00;padding:6px 10px;border-radius:4px;margin:8px 0;font-size:12px}
+  .box{display:inline-block;width:14px;height:14px;border:1.5px solid #555;border-radius:2px;vertical-align:middle}.par{display:inline-block;width:90px;border-bottom:1px solid #555;height:16px}.k-spec td{background:#f6f8fb}.pnotes{margin-top:18px;border:1px solid #ccc;border-radius:4px;min-height:80px;padding:6px 8px;font-size:12px;color:#555}.ppage{break-after:page}.ppage:last-child{break-after:auto}.pmini{font-size:12px;color:#555;border-bottom:2px solid #002e5d;padding-bottom:6px;margin-bottom:8px}.pmini b{color:#002e5d;font-size:14px}.pendnote{background:#fdf0d9;color:#9a5a00;padding:6px 10px;border-radius:4px;margin:8px 0;font-size:12px}
   .noprint{margin-bottom:16px}@media print{.noprint{display:none}body{margin:0}}
   </style></head><body><div class="noprint"><button onclick="window.print()">Print this sheet</button></div>${body}</body></html>`;
   let dl=null;try{dl=window.claude&&claude.use?await claude.use("downloads"):null}catch(e){}
