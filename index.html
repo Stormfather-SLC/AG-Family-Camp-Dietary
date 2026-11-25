@@ -107,6 +107,34 @@ pre.mail{white-space:pre-wrap;font:13px/1.5 var(--body);background:var(--sunk);p
 .sheet .gh{background:#eef2f7;padding:6px 8px;font-weight:600;margin-top:12px}
 .sheet .fh{font-weight:600;font-size:12px;color:#555;padding:6px 8px 2px;text-transform:uppercase;letter-spacing:.04em}
 .sheet .tot{font-size:22px;font-weight:700;color:#002e5d}
+/* kitchen sheets (daily production list, weekly meal schedule) */
+.sheet .dpage{break-after:page;padding-bottom:18px}
+.sheet .dpage:last-child{break-after:auto}
+.sheet .top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:2px solid #002e5d;padding-bottom:8px;margin-bottom:10px}
+.sheet .top .org{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:#555}
+.sheet .top h1{font-size:22px;color:#002e5d;margin:2px 0}
+.sheet .stamp{font-size:12px;font-weight:600;color:#1f7a45;text-align:right}
+.sheet .stamp.draft{color:#9a5a00}
+.sheet .stamp span{display:block;font-weight:400;color:#555}
+.sheet .dsvc{margin-top:14px;break-inside:avoid}
+.sheet .dsvc h2{font-size:16px;display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid #ccc;padding-bottom:3px}
+.sheet .dtot{font-size:13px;font-weight:600;color:#555}
+.sheet .ptab td.cb{width:26px}
+.sheet .ptab td.pc,.sheet .ptab th.pc{width:110px}
+.sheet .box{display:inline-block;width:14px;height:14px;border:1.5px solid #555;border-radius:2px;vertical-align:middle}
+.sheet .par{display:inline-block;width:90px;border-bottom:1px solid #555;height:16px}
+.sheet .miss{color:#9a5a00}
+.sheet .k-spec td{background:#f6f8fb}
+.sheet .pnotes{margin-top:18px;border:1px solid #ccc;border-radius:4px;min-height:80px;padding:6px 8px;font-size:12px;color:#555}
+.sheet .pendnote{background:#fdf0d9;color:#9a5a00;padding:6px 10px;border-radius:4px;margin:8px 0;font-size:12px}
+@media print{
+  body[data-view="kitchen"] header.band,body[data-view="week"] header.band,body[data-view="printout"] header.band,
+  body[data-view="kitchen"] .banner,body[data-view="week"] .banner,body[data-view="printout"] .banner,
+  body[data-view="kitchen"] main>.card,body[data-view="week"] main>.card,body[data-view="printout"] main>.card,.toast{display:none!important}
+  body[data-view="kitchen"],body[data-view="week"],body[data-view="printout"]{background:#fff}
+  body[data-view="kitchen"] main.wrap,body[data-view="week"] main.wrap,body[data-view="printout"] main.wrap{padding:0;max-width:none}
+  body[data-view="kitchen"] .sheet,body[data-view="week"] .sheet,body[data-view="printout"] .sheet{border:0;padding:0}
+}
 @media (max-width:560px){.lv{grid-template-columns:1fr}.weeknav b{min-width:0}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -248,7 +276,7 @@ document.addEventListener("keydown",e=>{if(e.altKey&&e.shiftKey&&!e.ctrlKey&&!e.
 let taps=0,tapT;$("#brandName").addEventListener("click",()=>{taps++;clearTimeout(tapT);tapT=setTimeout(()=>taps=0,1500);if(taps>=5){taps=0;setStaff(!staffMode)}});
 
 // ---------- state ----------
-let view="org";          // org | groups | printout
+let view="org";          // org | groups | printout | kitchen | week
 let current=null;        // organizer's group
 let allGroups=null, unwatch=null;
 let printWeek=campWeekOf(today()), printJumped=false;
@@ -256,7 +284,7 @@ let saveState="", saveTimer=null, saving=Promise.resolve();
 
 function renderTabs(){
   const t=$("#tabs");t.hidden=!staffMode;if(!staffMode){t.innerHTML="";return}
-  const tabs=[["org","Organizer form"],["groups","Groups"],["printout","Weekly printout"]];
+  const tabs=[["org","Organizer form"],["groups","Groups"],["printout","Weekly printout"],["kitchen","Daily production list"],["week","Weekly meal schedule"]];
   t.innerHTML=tabs.map(([k,l])=>`<button type="button" data-tab="${k}" aria-pressed="${view===k}">${l}</button>`).join("");
 }
 $("#tabs").addEventListener("click",e=>{const b=e.target.closest("[data-tab]");if(!b)return;view=b.dataset.tab;if(view!=="org")ensureWatch();render()});
@@ -265,7 +293,7 @@ function renderBanner(){
   const msg=store.mode==="local"?(DEMO?"Demo: made-up sample groups, saved in this browser only. Nothing here reaches Aspen Grove.":"Practice mode: changes save in this browser only. Open this page in Claude while signed in to save for real."):"";
   b.hidden=!msg;t.textContent=msg;
 }
-function render(){renderTabs();renderBanner();if(view==="groups")return renderGroups();if(view==="printout")return renderPrintout();renderOrg()}
+function render(){document.body.dataset.view=view;renderTabs();renderBanner();if(view==="groups")return renderGroups();if(view==="printout")return renderPrintout();if(view==="kitchen")return renderKitchen();if(view==="week")return renderKitchenWeek();renderOrg()}
 
 // ---------- organizer form ----------
 async function openFromHash(){
@@ -352,6 +380,7 @@ $("#app").addEventListener("click",async e=>{
     if(a==="print")return window.print();
     if(a==="download")return downloadSheet();
   }
+  if(view==="kitchen"||view==="week")return kitchenAction(a);
 });
 
 // add / edit a person
@@ -443,7 +472,7 @@ function emailDialog(title,g,m){
 // ---------- staff: groups ----------
 function ensureWatch(){if(unwatch)return;let first=true;
   unwatch=store.watch(async list=>{allGroups=list||[];if(first){first=false;const n=await purgeExpired(allGroups);if(n)toast(`Deleted ${n} finished ${n===1?"group":"groups"} (stay ended)`)}
-    if(view==="groups")renderGroups();if(view==="printout")renderPrintout()})}
+    if(view==="groups")renderGroups();if(view==="printout")renderPrintout();if(view==="kitchen")renderKitchen();if(view==="week")renderKitchenWeek()})}
 function renderGroups(){
   const app=$("#app");
   const list=(allGroups||[]).filter(g=>!expired(g)).sort((a,b)=>(a.arrive||"").localeCompare(b.arrive||"")||a.name.localeCompare(b.name));
@@ -542,6 +571,147 @@ async function downloadSheet(){
   let dl=null;try{dl=window.claude&&claude.use?await claude.use("downloads"):null}catch(e){}
   if(!dl){const w=window.open("","_blank");if(w){w.document.write(html);w.document.close();return}toast("Downloads aren't available in this view. Open the page in claude.ai to download.");return}
   try{await dl.save({filename:`dietary-needs-preferences-week-of-${printWeek}.html`,data:html})}catch(e){if(e&&e.code!=="declined")toast("Couldn't download the printout.")}
+}
+
+// ---------- staff: kitchen sheets (daily production list, weekly meal schedule) ----------
+// Fixed Family Camp menu: the same every camp week, Saturday check-in through Friday. Meals only, no snacks.
+// PLACEHOLDER: the chefs are still finalizing the real menu. To fill it in, edit MENU below; nothing else needs to change.
+//   MENU[0] is Saturday ... MENU[6] is Friday. Example:  MENU[0].dinner={time:"18:00",items:["Roast chicken","Rice pilaf","Green beans"]}
+//   Set a meal to null if it isn't served that day, for example MENU[0].breakfast=null
+const MEALS=[["breakfast","Breakfast"],["lunch","Lunch"],["dinner","Dinner"]];
+const MENU=Array.from({length:7},()=>({breakfast:{time:"",items:[]},lunch:{time:"",items:[]},dinner:{time:"",items:[]}}));
+const menuPending=()=>MENU.some(d=>Object.values(d).some(m=>m&&!m.items.length));
+const PENDING_NOTE="Menu and serving times are placeholders: the chefs are still finalizing the Family Camp menu.";
+const PLATE={"Milk / dairy":"Dairy-free","Eggs":"Egg-free","Wheat / gluten":"Gluten-free","Peanuts":"Peanut-free","Tree nuts":"Tree-nut-free","Fish":"Fish-free","Shellfish":"Shellfish-free","Soy":"Soy-free","Sesame":"Sesame-free","Celiac disease":"Gluten-free (celiac, no cross-contact)"};
+const plateOf=it=>it.r==="Other"?(it.text||"Other").trim():(PLATE[it.r]||it.r);
+const platesFor=p=>[...new Set(p.items.map(plateOf))].sort().join(" + ");
+const fmtTime=t=>{if(!t)return "time TBD";const[h,m]=t.split(":").map(Number);return new Date(2000,0,1,h,m).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})};
+const dayOff=d=>Math.round((parse(d)-parse(campWeekOf(d)))/864e5);
+function mealsOn(d){const day=MENU[dayOff(d)]||{};
+  return MEALS.map(([k,l],i)=>day[k]?{k,label:l,i,time:day[k].time||"",items:day[k].items||[]}:null).filter(Boolean)
+    .sort((a,b)=>(a.time||"99").localeCompare(b.time||"99")||a.i-b.i)}
+const onSite=d=>(allGroups||[]).filter(g=>!expired(g)&&g.arrive&&g.depart&&g.arrive<=d&&g.depart>=d).sort((a,b)=>a.name.localeCompare(b.name));
+function siteDates(){const s=new Set();(allGroups||[]).filter(g=>!expired(g)&&g.arrive&&g.depart).forEach(g=>{for(let d=g.arrive;d<=g.depart;d=addDays(d,1))s.add(d)});return [...s].sort()}
+const peopleOn=d=>onSite(d).flatMap(g=>(g.guests||[]).filter(p=>p.items&&p.items.length).map(p=>({...p,group:g.name})));
+const stampHTML=gs=>{const n=gs.filter(g=>g.status!=="locked").length;return `<div class="stamp ${n?"draft":""}">${n?n+" draft"+(n===1?"":"s")+" included":"All locked in"}<span>Printed ${esc(new Date().toLocaleString(undefined,{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}))}</span></div>`};
+const groupsLine=(gs,d)=>gs.map(g=>`${esc(g.name)} (${peopleOn(d).filter(p=>p.group===g.name).length} with needs)${g.status!=="locked"?` <span class="miss">(draft)</span>`:""}`).join(" · ");
+const comboCounts=people=>{const c={};people.forEach(p=>{const k=platesFor(p);c[k]=(c[k]||0)+1});return Object.entries(c).sort((a,b)=>b[1]-a[1])};
+const platesHTML=p=>p.items.map(it=>isSerious(it)?`<span class="flag">${esc(itemLabel(it))}</span>`:esc(itemLabel(it))).join(", ");
+const pendHTML=()=>menuPending()?`<div class="pendnote">${PENDING_NOTE}</div>`:"";
+
+// One meal: items (with check box and PAR line for the production list) and special plates.
+function mealBlock(m,people,par){
+  const box=par?`<span class="box"></span>`:"",line=par?`<span class="par"></span>`:"";
+  const cell=c=>par?`<td class="cb">${box}</td>`:"";
+  const pc=par?`<td class="pc">${line}</td>`:"";
+  const rows=(m.items.length?m.items.map(i=>`<tr>${cell()}<td>${esc(i)}</td>${pc}</tr>`):[`<tr>${cell()}<td class="miss">Menu pending (chefs)</td>${pc}</tr>`]).join("");
+  const sp=people.length?`<tr class="k-spec">${cell()}<td><b>Special plates (${people.length})</b> <span class="small">${comboCounts(people).map(([k,n])=>n+" "+esc(k.toLowerCase())).join(" · ")}</span></td>${pc}</tr>`:"";
+  return `<section class="dsvc"><h2><span>${esc(m.label)} · <span class="${m.time?"":"miss"}">${esc(fmtTime(m.time))}</span></span>${people.length?`<span class="dtot">${people.length} special</span>`:""}</h2>
+    <table class="ptab"><thead><tr>${par?"<th></th>":""}<th>Item</th>${par?`<th class="pc">PAR</th>`:""}</tr></thead><tbody>${rows}${sp}</tbody></table></section>`;
+}
+
+// Daily production list: what the kitchen cooks and plates for one day.
+function productionBody(d){
+  const gs=onSite(d);if(!gs.length)return `<p>No groups on site this day.</p>`;
+  const people=peopleOn(d),meals=mealsOn(d);
+  const spl=[...people].sort((a,b)=>(b.items.some(isSerious)-a.items.some(isSerious))||a.group.localeCompare(b.group)||a.name.localeCompare(b.name));
+  const nd=addDays(d,1),nsite=onSite(nd).length,nm=mealsOn(nd),np=peopleOn(nd).length;
+  const tomorrow=nsite?`<table class="ptab"><tbody>${nm.map(m=>`<tr><th scope="row">${esc(m.label)}</th><td>${m.items.length?esc(m.items.join(", ")):`<span class="miss">Menu pending</span>`}</td><td class="small muted">${esc(fmtTime(m.time))}</td><td class="num">${np?np+" special":""}</td></tr>`).join("")}</tbody></table>`:`<p style="color:#555;margin:4px 0">No groups on site tomorrow.</p>`;
+  return `<div class="dpage"><div class="top"><div><div class="org">Aspen Grove · Family Camp kitchen production list</div><h1>${esc(fmt(d,{weekday:"long",month:"long",day:"numeric",year:"numeric"}))}</h1><div>${groupsLine(gs,d)}</div></div>${stampHTML(gs)}</div>
+    <p class="small" style="color:#555">Chefs fill in PAR. Special plates assume every guest listed eats every meal. Counts are guests with dietary needs or preferences only; total guest counts are not collected.</p>
+    ${pendHTML()}
+    ${meals.map(m=>mealBlock(m,people,true)).join("")||`<p style="color:#555">No meals are set for this day.</p>`}
+    ${spl.length?`<div class="sec"><h3>Special plates today · ${spl.length} guest${spl.length===1?"":"s"}</h3><table class="ptab"><tbody>${spl.map(p=>`<tr><td class="cb"><span class="box"></span></td><td style="width:26%"><b>${esc(p.name)}</b></td><td class="small" style="width:22%">${esc(p.group)}</td><td>${platesHTML(p)}</td></tr>`).join("")}</tbody></table></div>`:""}
+    <div class="sec"><h3>Tomorrow · ${esc(fmt(nd,{weekday:"long",month:"short",day:"numeric"}))}</h3>${tomorrow}</div>
+    <div class="pnotes">Notes</div></div>`;
+}
+
+// Weekly meal schedule: one summary page, then one page per day.
+function weekKitchenBody(mon){
+  const dates=[...Array(7)].map((_,i)=>addDays(mon,i)).filter(d=>onSite(d).length);
+  if(!dates.length)return `<p>No groups on site this week.</p>`;
+  const gmap=new Map();dates.forEach(d=>onSite(d).forEach(g=>gmap.set(g.code,g)));
+  const gl=[...gmap.values()].sort((a,b)=>a.arrive.localeCompare(b.arrive)||a.name.localeCompare(b.name));
+  const glance=dates.map(d=>{const g=onSite(d),n=peopleOn(d).length;
+    return `<tr><th scope="row">${esc(fmt(d,{weekday:"short",month:"short",day:"numeric"}))}</th><td>${g.map(x=>esc(x.name)+(x.status!=="locked"?` <span class="miss">(draft)</span>`:"")).join("<br>")}</td><td class="num">${n||"–"}</td><td>${mealsOn(d).map(m=>esc(m.label)+(m.time?" "+esc(fmtTime(m.time)):"")).join(", ")||`<span class="muted">No food service</span>`}</td></tr>`}).join("");
+  const diet=gl.map(g=>{const ps=(g.guests||[]).filter(p=>p.items&&p.items.length);
+    return `<tr class="dg"><th colspan="3" class="gh" style="text-transform:none;letter-spacing:0;font-size:13px;color:#111">${esc(g.name)} · ${esc(fmtRange(g.arrive,g.depart))}${g.status!=="locked"?` <span class="miss">(draft)</span>`:""}</th></tr>`
+      +(ps.length?ps.map(p=>`<tr><td style="width:30%"><b>${esc(p.name)}</b></td><td>${platesHTML(p)}</td><td style="width:18%" class="small">${esc(p.items.map(itemShort).join(" + "))}</td></tr>`).join(""):`<tr><td colspan="3" class="muted">${g.noneNeeded?"No dietary needs or preferences.":"Nothing listed yet."}</td></tr>`)}).join("");
+  const summary=`<div class="dpage"><div class="top"><div><div class="org">Aspen Grove · Family Camp weekly meal schedule</div><h1>Camp week ${esc(weekLabel(mon))}, ${parse(mon).getFullYear()}</h1><div>${gl.length} group${gl.length===1?"":"s"} on site</div></div>${stampHTML(gl)}</div>
+    ${pendHTML()}
+    <h3>At a glance</h3><table><thead><tr><th style="width:110px">Day</th><th>Groups on site</th><th class="num" style="width:90px">Special plates</th><th>Meals</th></tr></thead><tbody>${glance}</tbody></table>
+    <p class="small" style="color:#555;margin-top:6px">Each day follows on its own page.</p>
+    <div class="sec"><h3>Dietary accommodations</h3><table><tbody>${diet}</tbody></table></div>
+    <p style="color:#777;font-size:11px;margin-top:14px">Codes: ${Object.entries(ABBR).map(([k,v])=>v+" = "+k).join(" · ")} · OTHER = see note. Red = serious allergy or celiac. Confidential: dispose of this sheet at the end of the week.</p></div>`;
+  const days=dates.map(d=>{const gs=onSite(d),people=peopleOn(d);
+    return `<div class="dpage"><div class="top"><div><div class="org">Aspen Grove · Family Camp meal schedule</div><h1>${esc(fmt(d,{weekday:"long",month:"long",day:"numeric",year:"numeric"}))}</h1><div>${groupsLine(gs,d)}</div></div></div>
+      ${mealsOn(d).map(m=>mealBlock(m,people,false)).join("")||`<p style="color:#555">No meals are set for this day.</p>`}</div>`}).join("");
+  return summary+days;
+}
+
+// Page controls for both kitchen views.
+let kitchenDate="", kitchenWeek="";
+function kitchenWeeks(){return [...new Set(siteDates().map(campWeekOf))].sort()}
+function renderKitchen(){
+  const app=$("#app");
+  if(allGroups==null){app.innerHTML=`<div class="card"><p class="muted">Loading…</p></div>`;return}
+  const dates=siteDates();
+  if(!dates.length){app.innerHTML=`<section class="card"><h2>Daily production list</h2><div class="empty">No groups have camp dates yet. Start a group on the Groups tab.</div></section>`;return}
+  if(!kitchenDate||!dates.includes(kitchenDate))kitchenDate=dates.find(x=>x>=today())||dates[dates.length-1];
+  const i=dates.indexOf(kitchenDate);
+  app.innerHTML=`<section class="card" aria-labelledby="h-kd">
+    <div class="row between"><h2 id="h-kd">Daily production list</h2>
+      <div class="row">${canPrint?`<button class="btn" data-act="kprint">Print</button>`:""}<button class="btn ${canPrint?"ghost":""}" data-act="kdownload">Download list</button></div></div>
+    <div class="weeknav"><button class="btn sm quiet" data-act="kprev" ${i<=0?"disabled":""} aria-label="Previous day">←</button>
+      <label class="f" style="flex-direction:row;align-items:center;gap:6px">Day <select id="kdate">${dates.map(d=>`<option value="${d}" ${d===kitchenDate?"selected":""}>${esc(fmt(d,{weekday:"short",month:"short",day:"numeric",year:"numeric"}))}</option>`).join("")}</select></label>
+      <button class="btn sm quiet" data-act="knext" ${i>=dates.length-1?"disabled":""} aria-label="Next day">→</button></div>
+    <p class="small muted">What the kitchen cooks and plates for the day, with a check box and PAR line for each item, the special plates, and a look at tomorrow.${canPrint?"":" Download it, open the file, and print from there."}</p>
+  </section>
+  <article class="sheet" id="sheet">${productionBody(kitchenDate)}</article>`;
+}
+function renderKitchenWeek(){
+  const app=$("#app");
+  if(allGroups==null){app.innerHTML=`<div class="card"><p class="muted">Loading…</p></div>`;return}
+  const weeks=kitchenWeeks();
+  if(!weeks.length){app.innerHTML=`<section class="card"><h2>Weekly meal schedule</h2><div class="empty">No groups have camp dates yet. Start a group on the Groups tab.</div></section>`;return}
+  if(!kitchenWeek||!weeks.includes(kitchenWeek))kitchenWeek=weeks.find(w=>w>=campWeekOf(today()))||weeks[weeks.length-1];
+  const i=weeks.indexOf(kitchenWeek);
+  app.innerHTML=`<section class="card" aria-labelledby="h-kw">
+    <div class="row between"><h2 id="h-kw">Weekly meal schedule</h2>
+      <div class="row">${canPrint?`<button class="btn" data-act="kprint">Print</button>`:""}<button class="btn ${canPrint?"ghost":""}" data-act="kdownload">Download schedule</button></div></div>
+    <div class="weeknav"><button class="btn sm quiet" data-act="kprev" ${i<=0?"disabled":""} aria-label="Previous week">←</button>
+      <label class="f" style="flex-direction:row;align-items:center;gap:6px">Camp week <select id="kweek">${weeks.map(w=>`<option value="${w}" ${w===kitchenWeek?"selected":""}>${esc(weekLabel(w))}, ${parse(w).getFullYear()}</option>`).join("")}</select></label>
+      <button class="btn sm quiet" data-act="knext" ${i>=weeks.length-1?"disabled":""} aria-label="Next week">→</button></div>
+    <p class="small muted">A one-page summary of the week, then one page per day with every meal in time order.${canPrint?"":" Download it, open the file, and print from there."}</p>
+  </section>
+  <article class="sheet" id="sheet">${weekKitchenBody(kitchenWeek)}</article>`;
+}
+function kitchenAction(a){
+  const wk=view==="week",list=wk?kitchenWeeks():siteDates(),cur=wk?kitchenWeek:kitchenDate,i=list.indexOf(cur);
+  const set=v=>{if(wk)kitchenWeek=v;else kitchenDate=v;render()};
+  if(a==="kprev"&&i>0)return set(list[i-1]);
+  if(a==="knext"&&i>=0&&i<list.length-1)return set(list[i+1]);
+  if(a==="kprint")return window.print();
+  if(a==="kdownload"){
+    if(!cur)return;
+    return downloadKitchenSheet(wk?`Family Camp meal schedule ${cur}`:`Family Camp production list ${cur}`,wk?weekKitchenBody(cur):productionBody(cur),(wk?`meal-schedule-week-of-${cur}`:`production-list-${cur}`)+".html");
+  }
+}
+$("#app").addEventListener("change",e=>{
+  if(e.target.id==="kdate"){kitchenDate=e.target.value;renderKitchen()}
+  if(e.target.id==="kweek"){kitchenWeek=e.target.value;renderKitchenWeek()}
+});
+async function downloadKitchenSheet(title,body,filename){
+  const html=`<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title><style>
+  body{font:13px/1.45 "IBM Plex Sans",Arial,sans-serif;color:#111;margin:24px}h1,h2,h3{color:#002e5d;margin:0}table{border-collapse:collapse;width:100%;margin-top:4px}td,th{text-align:left;padding:5px 8px;border-bottom:1px solid #ddd;vertical-align:top}th{font-size:11px;text-transform:uppercase;color:#555}.num{text-align:right}.flag{color:#c41230;font-weight:700}.miss{color:#9a5a00}.muted{color:#555}.small{font-size:12px}.sec{margin-top:18px}.gh{background:#eef2f7;padding:6px 8px;font-weight:600}
+  .dpage{break-after:page;padding-bottom:18px}.dpage:last-child{break-after:auto}.top{display:flex;justify-content:space-between;gap:12px;border-bottom:2px solid #002e5d;padding-bottom:8px;margin-bottom:10px}.org{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:#555}.top h1{font-size:22px;margin:2px 0}.stamp{font-size:12px;font-weight:600;color:#1f7a45;text-align:right}.stamp.draft{color:#9a5a00}.stamp span{display:block;font-weight:400;color:#555}
+  .dsvc{margin-top:14px;break-inside:avoid}.dsvc h2{font-size:16px;display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid #ccc;padding-bottom:3px}.dtot{font-size:13px;font-weight:600;color:#555}.ptab td.cb{width:26px}.ptab td.pc,.ptab th.pc{width:110px}
+  .box{display:inline-block;width:14px;height:14px;border:1.5px solid #555;border-radius:2px;vertical-align:middle}.par{display:inline-block;width:90px;border-bottom:1px solid #555;height:16px}.k-spec td{background:#f6f8fb}.pnotes{margin-top:18px;border:1px solid #ccc;border-radius:4px;min-height:80px;padding:6px 8px;font-size:12px;color:#555}.pendnote{background:#fdf0d9;color:#9a5a00;padding:6px 10px;border-radius:4px;margin:8px 0;font-size:12px}
+  .noprint{margin-bottom:16px}@media print{.noprint{display:none}body{margin:0}}
+  </style></head><body><div class="noprint"><button onclick="window.print()">Print this sheet</button></div>${body}</body></html>`;
+  let dl=null;try{dl=window.claude&&claude.use?await claude.use("downloads"):null}catch(e){}
+  if(!dl){const w=window.open("","_blank");if(w){w.document.write(html);w.document.close();return}toast("Downloads aren't available in this view. Open the page in claude.ai to download.");return}
+  try{await dl.save({filename,data:html})}catch(e){if(e&&e.code!=="declined")toast("Couldn't download the sheet.")}
 }
 
 // ---------- start ----------

@@ -29,6 +29,16 @@ Staff view is simulated for the pilot: Alt+Shift+S, a link ending in `?staff`, o
   - Below, for the dining hall: names and restrictions by group and family.
   - Groups not yet locked in are flagged. Download the sheet, open it, and print. On the GitHub Pages demo, Print works directly.
 
+### Kitchen sheets (staff)
+
+Two printable sheets, adapted from the Daily production list and Weekly meal schedule in [AG Conference Reservation](https://github.com/Stormfather-SLC/AG-Conference-Reservation). Family Camp groups don't choose meals, so these use one fixed menu for every camp week and show dietary counts only.
+
+- **Daily production list:** pick a day. Each meal (breakfast, lunch, dinner) lists its menu items with a check box and a blank PAR line, the special plates for that meal, then a list of guests with special plates for the day and a look at tomorrow.
+- **Weekly meal schedule:** a one-page summary of the week (groups on site, special plates, meals), the dietary accommodations by group, then one page per day.
+- No snacks, and no total guest counts or "Serve" counts. Special plates assume every listed guest eats every meal.
+- **The menu is a placeholder.** The chefs are still finalizing it. Until then the sheets print "Menu pending" and "time TBD" with an amber note. To fill it in, edit the `MENU` constant near the Kitchen code in `index.html` (one entry per day, Saturday to Friday; the comment above it has an example).
+- Print works directly on the GitHub Pages demo. Printing hides the page header and controls so only the sheet prints.
+
 ## Data and retention
 
 - The form asks only for a name and the need or preference. No other personal information.
