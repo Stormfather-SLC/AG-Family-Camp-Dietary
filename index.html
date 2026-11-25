@@ -584,7 +584,9 @@ async function downloadSheet(){
 // To change it, edit MENU_ODD / MENU_EVEN below. Index 0 is Saturday ... 6 is Friday. A meal that isn't served is left out.
 const MEALS=[["breakfast","Breakfast"],["lunch","Lunch"],["dinner","Dinner"]];
 const MENU_TEMP=true;                  // shows the "temporary menu" note on the sheets; set to false once the menu is final
-const WEEK1="2026-05-30";              // the Saturday of "Week 1" in the 2026 season; odd/even weeks count from here
+// The Saturday that starts "Week 1" of each season. Odd and even weeks count from it, and the count restarts every season.
+// Add one line each year. (2026: Week 1 = May 30. 2027: Week 1 = June 5.) A date before the earliest season uses the earliest.
+const WEEK1={2026:"2026-05-30",2027:"2027-06-05"};
 const SOUP="Soup & Salad Bar", BFBAR="Breakfast Bar";
 // meal(start, end, entree items, bar, dessert items, allergen options) -> {time,end,items}
 const meal=(time,end,entree,bar,dessert=[],allergen=[])=>({time,end,items:[...entree,...(bar?[bar]:[]),...dessert.map(x=>"Dessert: "+x),...allergen.map(x=>"Allergen option: "+x)]});
@@ -624,7 +626,9 @@ const MENU_EVEN=[
    dinner:DI(["Brisket","Salmon","Asparagus","Roasted Potatoes","Rolls"],["Apple Crisp"],["Gluten-Free & Dairy-Free Crisp"])},
   {breakfast:FRI_BF}
 ];
-const weekIsOdd=mon=>Math.round((parse(mon)-parse(WEEK1))/(7*864e5))%2===0;   // Week 1 = WEEK1, Week 2 = the next Saturday, ...
+const week1For=mon=>{const y=parse(mon).getFullYear(),ys=Object.keys(WEEK1).map(Number).sort((a,b)=>a-b);
+  const pick=ys.includes(y)?y:(ys.filter(k=>k<y).pop()??ys[0]);return WEEK1[pick]};
+const weekIsOdd=mon=>(((Math.round((parse(mon)-parse(week1For(mon)))/(7*864e5))%2)+2)%2)===0;   // Week 1 = that season's start, Week 2 = the next Saturday, ...
 const menuFor=d=>weekIsOdd(campWeekOf(d))?MENU_ODD:MENU_EVEN;
 const PLATE={"Milk / dairy":"Dairy-free","Eggs":"Egg-free","Wheat / gluten":"Gluten-free","Peanuts":"Peanut-free","Tree nuts":"Tree-nut-free","Fish":"Fish-free","Shellfish":"Shellfish-free","Soy":"Soy-free","Sesame":"Sesame-free","Celiac disease":"Gluten-free (celiac, no cross-contact)"};
 const plateOf=it=>it.r==="Other"?(it.text||"Other").trim():(PLATE[it.r]||it.r);
