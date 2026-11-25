@@ -574,21 +574,61 @@ async function downloadSheet(){
 }
 
 // ---------- staff: kitchen sheets (daily production list, weekly meal schedule) ----------
-// Fixed Family Camp menu: the same every camp week, Saturday check-in through Friday. Meals only, no snacks.
-// PLACEHOLDER: the chefs are still finalizing the real menu. To fill it in, edit MENU below; nothing else needs to change.
-//   MENU[0] is Saturday ... MENU[6] is Friday. Example:  MENU[0].dinner={time:"18:00",items:["Roast chicken","Rice pilaf","Green beans"]}
-//   Set a meal to null if it isn't served that day, for example MENU[0].breakfast=null
+// Family Camp menu: meals only (no snacks), Saturday check-in through Friday, with an odd-week and an even-week version.
+// TEMPORARY: copied from the "TEMPLATE (Odd Weeks)" and "TEMPLATE (Even Weeks)" docs while the chefs finalize the real menu.
+// To change it, edit MENU_ODD / MENU_EVEN below. Index 0 is Saturday ... 6 is Friday. A meal that isn't served is left out.
 const MEALS=[["breakfast","Breakfast"],["lunch","Lunch"],["dinner","Dinner"]];
-const MENU=Array.from({length:7},()=>({breakfast:{time:"",items:[]},lunch:{time:"",items:[]},dinner:{time:"",items:[]}}));
-const menuPending=()=>MENU.some(d=>Object.values(d).some(m=>m&&!m.items.length));
-const PENDING_NOTE="Menu and serving times are placeholders: the chefs are still finalizing the Family Camp menu.";
+const MENU_TEMP=true;                  // shows the "temporary menu" note on the sheets; set to false once the menu is final
+const WEEK1="2026-05-30";              // the Saturday of "Week 1" in the 2026 season; odd/even weeks count from here
+const SOUP="Soup & Salad Bar", BFBAR="Breakfast Bar";
+// meal(start, end, entree items, bar, dessert items, allergen options) -> {time,end,items}
+const meal=(time,end,entree,bar,dessert=[],allergen=[])=>({time,end,items:[...entree,...(bar?[bar]:[]),...dessert.map(x=>"Dessert: "+x),...allergen.map(x=>"Allergen option: "+x)]});
+const BF=(entree,allergen)=>meal("08:00","09:00",entree,BFBAR,[],allergen);
+const LU=(t,e,entree,allergen)=>meal(t,e,entree,SOUP,[],allergen);
+const DI=(entree,dessert,allergen)=>meal("17:00","18:40",entree,SOUP,dessert,allergen);
+const SUN_BF=BF(["Donuts","Pastries","Muffins","Lox","Bagels","Mountain Man Potatoes"],[]);
+const SUN_LU=LU("12:30","14:15",["Sandwich Bar","Pasta Salad","Sandwich Toppings","Chips"],[]);
+const SUN_DI=d=>DI(["Pot Roast","Vegetables","Mashed Potatoes","Gravy","Rolls"],[d],["Gluten-Free Rolls","Jolly Llamas"]);
+const MON_BF=BF(["Pancakes","Sausage","Quiche"],["Allergy-Free Pancakes"]);
+const TUE_BF=BF(["Omelets","Country Potatoes","Bacon"],[]);
+const TUE_DI=DI(["Pulled Pork","BBQ Chicken","Baked Beans","Corn","Cornbread","Coleslaw","Mac & Cheese","Rolls"],["Funnel Cake Fries"],["Gluten-Free Rolls","Outshine Bars"]);
+const WED_BF=BF(["French Toast","Ham","Berries","Whipped Cream"],["Gluten-Free Vegan French Toast"]);
+const THU_BF=BF(["Biscuits & Gravy","Eggs","Hash Browns"],["Check with Chef"]);
+const FRI_BF=BF(["Waffles","Sausage","Strawberries","Whipped Cream","Quiche"],["Allergen-Free Waffles"]);
+const MENU_ODD=[
+  {dinner:meal("17:00","18:30",["Pasta","Squash & Zucchini","Marinara & Alfredo Sauce","Chicken","Meatballs","Breadsticks"],SOUP,["Fatboys & Creamies"],["Gluten-Free Pasta","Outshine bars, Italian Ice"])},
+  {breakfast:SUN_BF,lunch:SUN_LU,dinner:SUN_DI("Cake")},
+  {breakfast:MON_BF,lunch:LU("12:00","13:40",["Fajitas (Beef, Chicken)","Beans","Rice","Sour Cream","Cheese","Salsa","Guacamole"],["Gluten-Free Tortillas"]),
+   dinner:DI(["Pork Tenderloin","Brussels Sprouts","Roasted Potatoes","Apple Cream Sauce","Rolls"],["Strawberry Shortcake"],["Gluten-Free Rolls","Italian Ice"])},
+  {breakfast:TUE_BF,lunch:LU("12:00","13:40",["Philly Sandwiches (Chicken, Beef)","Cheese","Sidewinder Fries"],["Gluten-Free Bread"]),dinner:TUE_DI},
+  {breakfast:WED_BF,lunch:LU("12:00","13:30",["Chicken Wraps (Southwest, Pesto, Chicken Salad)","Chips"],["Gluten-Free Tortillas"]),
+   dinner:DI(["Turkey","Sweet Potatoes","Green Beans","Gravy","Rolls"],["Cheesecake"],["Gluten-Free Rolls","Jolly Llamas"])},
+  {breakfast:THU_BF,lunch:LU("12:00","13:40",["Enchiladas","Cilantro Lime Rice"],["Gluten-Free Tortillas","Corn Chips"]),
+   dinner:DI(["Tri-Tip Steak","Tortilla Tilapia or Shrimp","Asparagus","Mashed Potatoes","Rolls"],["Peach Cobbler"],["Gluten-Free & Dairy-Free Cobbler"])},
+  {breakfast:FRI_BF}
+];
+const MENU_EVEN=[
+  {dinner:meal("17:00","18:30",["Lasagna","Veggie Lasagna","Broccoli","Breadsticks"],SOUP,["Rice Krispies"],["Gluten-Free Pasta","Outshine bars, Italian Ice"])},
+  {breakfast:SUN_BF,lunch:SUN_LU,dinner:SUN_DI("Brownie")},
+  {breakfast:MON_BF,lunch:LU("12:00","13:40",["Toco Bar","Chips & Salsa"],["Gluten-Free Tortillas"]),
+   dinner:DI(["Grilled Chicken","Brussels Sprouts","Scalloped Potatoes","Rolls"],["Trifle (Raspberry & Mango)"],["Gluten-Free Rolls","Italian Ice"])},
+  {breakfast:TUE_BF,lunch:LU("12:00","13:40",["French Dip","Corn Dogs","Tater Tots"],["Gluten-Free Bread"]),dinner:TUE_DI},
+  {breakfast:WED_BF,lunch:LU("12:00","13:30",["Sandwich - Baked Chicken","Fries"],["Gluten-Free Bread"]),
+   dinner:DI(["Turkey","Baked Potatoes","Green Beans","Gravy","Rolls"],["Banana Bars"],["Gluten-Free Rolls","Jolly Llamas"])},
+  {breakfast:THU_BF,lunch:LU("12:00","13:40",["Teriyaki Chicken","Fried Rice","Eggrolls"],["Check with Chef"]),
+   dinner:DI(["Brisket","Salmon","Asparagus","Roasted Potatoes","Rolls"],["Apple Crisp"],["Gluten-Free & Dairy-Free Crisp"])},
+  {breakfast:FRI_BF}
+];
+const weekIsOdd=mon=>Math.round((parse(mon)-parse(WEEK1))/(7*864e5))%2===0;   // Week 1 = WEEK1, Week 2 = the next Saturday, ...
+const menuFor=d=>weekIsOdd(campWeekOf(d))?MENU_ODD:MENU_EVEN;
 const PLATE={"Milk / dairy":"Dairy-free","Eggs":"Egg-free","Wheat / gluten":"Gluten-free","Peanuts":"Peanut-free","Tree nuts":"Tree-nut-free","Fish":"Fish-free","Shellfish":"Shellfish-free","Soy":"Soy-free","Sesame":"Sesame-free","Celiac disease":"Gluten-free (celiac, no cross-contact)"};
 const plateOf=it=>it.r==="Other"?(it.text||"Other").trim():(PLATE[it.r]||it.r);
 const platesFor=p=>[...new Set(p.items.map(plateOf))].sort().join(" + ");
 const fmtTime=t=>{if(!t)return "time TBD";const[h,m]=t.split(":").map(Number);return new Date(2000,0,1,h,m).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})};
 const dayOff=d=>Math.round((parse(d)-parse(campWeekOf(d)))/864e5);
-function mealsOn(d){const day=MENU[dayOff(d)]||{};
-  return MEALS.map(([k,l],i)=>day[k]?{k,label:l,i,time:day[k].time||"",items:day[k].items||[]}:null).filter(Boolean)
+const fmtSpan=m=>m.time?fmtTime(m.time)+(m.end?" – "+fmtTime(m.end):""):"time TBD";
+function mealsOn(d){const day=menuFor(d)[dayOff(d)]||{};
+  return MEALS.map(([k,l],i)=>day[k]?{k,label:l,i,time:day[k].time||"",end:day[k].end||"",items:day[k].items||[]}:null).filter(Boolean)
     .sort((a,b)=>(a.time||"99").localeCompare(b.time||"99")||a.i-b.i)}
 const onSite=d=>(allGroups||[]).filter(g=>!expired(g)&&g.arrive&&g.depart&&g.arrive<=d&&g.depart>=d).sort((a,b)=>a.name.localeCompare(b.name));
 function siteDates(){const s=new Set();(allGroups||[]).filter(g=>!expired(g)&&g.arrive&&g.depart).forEach(g=>{for(let d=g.arrive;d<=g.depart;d=addDays(d,1))s.add(d)});return [...s].sort()}
@@ -597,7 +637,7 @@ const stampHTML=gs=>{const n=gs.filter(g=>g.status!=="locked").length;return `<d
 const groupsLine=(gs,d)=>gs.map(g=>`${esc(g.name)} (${peopleOn(d).filter(p=>p.group===g.name).length} with needs)${g.status!=="locked"?` <span class="miss">(draft)</span>`:""}`).join(" · ");
 const comboCounts=people=>{const c={};people.forEach(p=>{const k=platesFor(p);c[k]=(c[k]||0)+1});return Object.entries(c).sort((a,b)=>b[1]-a[1])};
 const platesHTML=p=>p.items.map(it=>isSerious(it)?`<span class="flag">${esc(itemLabel(it))}</span>`:esc(itemLabel(it))).join(", ");
-const pendHTML=()=>menuPending()?`<div class="pendnote">${PENDING_NOTE}</div>`:"";
+const pendHTML=d=>MENU_TEMP?`<div class="pendnote">Temporary menu (${weekIsOdd(campWeekOf(d))?"odd":"even"}-week template). The chefs are still finalizing the Family Camp menu.</div>`:"";
 
 // One meal: items (with check box and PAR line for the production list) and special plates.
 function mealBlock(m,people,par){
@@ -606,7 +646,7 @@ function mealBlock(m,people,par){
   const pc=par?`<td class="pc">${line}</td>`:"";
   const rows=(m.items.length?m.items.map(i=>`<tr>${cell()}<td>${esc(i)}</td>${pc}</tr>`):[`<tr>${cell()}<td class="miss">Menu pending (chefs)</td>${pc}</tr>`]).join("");
   const sp=people.length?`<tr class="k-spec">${cell()}<td><b>Special plates (${people.length})</b> <span class="small">${comboCounts(people).map(([k,n])=>n+" "+esc(k.toLowerCase())).join(" · ")}</span></td>${pc}</tr>`:"";
-  return `<section class="dsvc"><h2><span>${esc(m.label)} · <span class="${m.time?"":"miss"}">${esc(fmtTime(m.time))}</span></span>${people.length?`<span class="dtot">${people.length} special</span>`:""}</h2>
+  return `<section class="dsvc"><h2><span>${esc(m.label)} · <span class="${m.time?"":"miss"}">${esc(fmtSpan(m))}</span></span>${people.length?`<span class="dtot">${people.length} special</span>`:""}</h2>
     <table class="ptab"><thead><tr>${par?"<th></th>":""}<th>Item</th>${par?`<th class="pc">PAR</th>`:""}</tr></thead><tbody>${rows}${sp}</tbody></table></section>`;
 }
 
@@ -616,10 +656,10 @@ function productionBody(d){
   const people=peopleOn(d),meals=mealsOn(d);
   const spl=[...people].sort((a,b)=>(b.items.some(isSerious)-a.items.some(isSerious))||a.group.localeCompare(b.group)||a.name.localeCompare(b.name));
   const nd=addDays(d,1),nsite=onSite(nd).length,nm=mealsOn(nd),np=peopleOn(nd).length;
-  const tomorrow=nsite?`<table class="ptab"><tbody>${nm.map(m=>`<tr><th scope="row">${esc(m.label)}</th><td>${m.items.length?esc(m.items.join(", ")):`<span class="miss">Menu pending</span>`}</td><td class="small muted">${esc(fmtTime(m.time))}</td><td class="num">${np?np+" special":""}</td></tr>`).join("")}</tbody></table>`:`<p style="color:#555;margin:4px 0">No groups on site tomorrow.</p>`;
+  const tomorrow=nsite?`<table class="ptab"><tbody>${nm.map(m=>`<tr><th scope="row">${esc(m.label)}</th><td>${m.items.length?esc(m.items.join(", ")):`<span class="miss">Menu pending</span>`}</td><td class="small muted">${esc(fmtSpan(m))}</td><td class="num">${np?np+" special":""}</td></tr>`).join("")}</tbody></table>`:`<p style="color:#555;margin:4px 0">No groups on site tomorrow.</p>`;
   return `<div class="dpage"><div class="top"><div><div class="org">Aspen Grove · Family Camp kitchen production list</div><h1>${esc(fmt(d,{weekday:"long",month:"long",day:"numeric",year:"numeric"}))}</h1><div>${groupsLine(gs,d)}</div></div>${stampHTML(gs)}</div>
     <p class="small" style="color:#555">Chefs fill in PAR. Special plates assume every guest listed eats every meal. Counts are guests with dietary needs or preferences only; total guest counts are not collected.</p>
-    ${pendHTML()}
+    ${pendHTML(d)}
     ${meals.map(m=>mealBlock(m,people,true)).join("")||`<p style="color:#555">No meals are set for this day.</p>`}
     ${spl.length?`<div class="sec"><h3>Special plates today · ${spl.length} guest${spl.length===1?"":"s"}</h3><table class="ptab"><tbody>${spl.map(p=>`<tr><td class="cb"><span class="box"></span></td><td style="width:26%"><b>${esc(p.name)}</b></td><td class="small" style="width:22%">${esc(p.group)}</td><td>${platesHTML(p)}</td></tr>`).join("")}</tbody></table></div>`:""}
     <div class="sec"><h3>Tomorrow · ${esc(fmt(nd,{weekday:"long",month:"short",day:"numeric"}))}</h3>${tomorrow}</div>
@@ -633,12 +673,12 @@ function weekKitchenBody(mon){
   const gmap=new Map();dates.forEach(d=>onSite(d).forEach(g=>gmap.set(g.code,g)));
   const gl=[...gmap.values()].sort((a,b)=>a.arrive.localeCompare(b.arrive)||a.name.localeCompare(b.name));
   const glance=dates.map(d=>{const g=onSite(d),n=peopleOn(d).length;
-    return `<tr><th scope="row">${esc(fmt(d,{weekday:"short",month:"short",day:"numeric"}))}</th><td>${g.map(x=>esc(x.name)+(x.status!=="locked"?` <span class="miss">(draft)</span>`:"")).join("<br>")}</td><td class="num">${n||"–"}</td><td>${mealsOn(d).map(m=>esc(m.label)+(m.time?" "+esc(fmtTime(m.time)):"")).join(", ")||`<span class="muted">No food service</span>`}</td></tr>`}).join("");
+    return `<tr><th scope="row">${esc(fmt(d,{weekday:"short",month:"short",day:"numeric"}))}</th><td>${g.map(x=>esc(x.name)+(x.status!=="locked"?` <span class="miss">(draft)</span>`:"")).join("<br>")}</td><td class="num">${n||"–"}</td><td>${mealsOn(d).map(m=>esc(m.label)+(m.time?" "+esc(fmtSpan(m)):"")).join(", ")||`<span class="muted">No food service</span>`}</td></tr>`}).join("");
   const diet=gl.map(g=>{const ps=(g.guests||[]).filter(p=>p.items&&p.items.length);
     return `<tr class="dg"><th colspan="3" class="gh" style="text-transform:none;letter-spacing:0;font-size:13px;color:#111">${esc(g.name)} · ${esc(fmtRange(g.arrive,g.depart))}${g.status!=="locked"?` <span class="miss">(draft)</span>`:""}</th></tr>`
       +(ps.length?ps.map(p=>`<tr><td style="width:30%"><b>${esc(p.name)}</b></td><td>${platesHTML(p)}</td><td style="width:18%" class="small">${esc(p.items.map(itemShort).join(" + "))}</td></tr>`).join(""):`<tr><td colspan="3" class="muted">${g.noneNeeded?"No dietary needs or preferences.":"Nothing listed yet."}</td></tr>`)}).join("");
   const summary=`<div class="dpage"><div class="top"><div><div class="org">Aspen Grove · Family Camp weekly meal schedule</div><h1>Camp week ${esc(weekLabel(mon))}, ${parse(mon).getFullYear()}</h1><div>${gl.length} group${gl.length===1?"":"s"} on site</div></div>${stampHTML(gl)}</div>
-    ${pendHTML()}
+    ${pendHTML(mon)}
     <h3>At a glance</h3><table><thead><tr><th style="width:110px">Day</th><th>Groups on site</th><th class="num" style="width:90px">Special plates</th><th>Meals</th></tr></thead><tbody>${glance}</tbody></table>
     <p class="small" style="color:#555;margin-top:6px">Each day follows on its own page.</p>
     <div class="sec"><h3>Dietary accommodations</h3><table><tbody>${diet}</tbody></table></div>
